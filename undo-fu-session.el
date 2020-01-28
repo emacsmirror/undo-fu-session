@@ -294,7 +294,7 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
     (dolist (matcher test-files)
       (when
         (if (stringp matcher)
-          (string-match matcher filename)
+          (string-match-p matcher filename)
           (funcall matcher filename))
         (throw 'found t)))))
 
