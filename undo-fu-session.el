@@ -25,7 +25,7 @@
 
 ;;; Commentary:
 
-;; This extension provides a way to use undo history of
+;; This extension provides a way to use undo steps of
 ;; individual file buffers persistently.
 ;;
 ;; Write the following code to your .emacs:
@@ -43,12 +43,12 @@
 ;; Custom variables.
 
 (defgroup undo-fu-session nil
-  "Persistent undo history, stored on disk between sessions."
+  "Persistent undo steps, stored on disk between sessions."
   :group 'convenience)
 
 (defcustom undo-fu-session-directory
   (locate-user-emacs-file "undo-fu-session" ".emacs-undo-fu-session")
-  "A directory being stored undo history files."
+  "The directory to store undo data."
   :group 'undo-fu-session
   :type 'string)
 
@@ -63,7 +63,7 @@
   :type '(repeat (choice regexp function)))
 
 (defcustom undo-fu-session-incompatible-major-modes nil
-  "List of major-modes in which saving undo history should not be performed."
+  "List of major-modes in which saving undo data should not be performed."
   :type '(repeat symbol)
   :group 'undo-fu-session)
 
@@ -74,12 +74,11 @@ Enforcing removes the oldest files."
   :type 'integer
   :group 'undo-fu-session)
 
-
 ;; ---------------------------------------------------------------------------
 ;; Undo Encode/Decode Functionality
 
 (defun undo-fu-session--walk-tree (fn tree)
-  "Operate recursively on undo history, calling FN TREE."
+  "Operate recursively on undo-list, calling FN TREE."
   (cond
     ((consp tree)
       (let ((value (funcall fn tree)))
@@ -134,7 +133,7 @@ Enforcing removes the oldest files."
     tree))
 
 (defun undo-fu-session--decode (tree)
-  "Decode `TREE' so that it can be recovered as undo history."
+  "Decode `TREE' so that it can be recovered as undo data."
   (undo-fu-session--walk-tree
     (lambda (a)
       (if (consp a)
@@ -163,7 +162,7 @@ Enforcing removes the oldest files."
     tree))
 
 (defun undo-fu-session--next-step (list)
-  "Get the next undo step in the list.
+  "Get the next undo step in LIST.
 
 Argument LIST compatible list `buffer-undo-list'."
   (while (car list)
@@ -246,7 +245,6 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
             (puthash key val equiv-table-hash)))))
     equiv-table-hash))
 
-
 ;; ---------------------------------------------------------------------------
 ;; Undo Session Limiting Functionality
 
@@ -301,7 +299,7 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
         (throw 'found t)))))
 
 (defun undo-fu-session--recover-buffer-p (buffer)
-  "Return t if undo history of BUFFER should be recovered."
+  "Return t if undo data of BUFFER should be recovered."
   (let
     (
       (filename (buffer-file-name buffer))
@@ -373,10 +371,10 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
       (undo-fu-session--save-impl)
-      (error (message "Undo-Fu-Session can not save undo history: %s" err)))))
+      (error (message "Undo-Fu-Session can not save undo data: %s" err)))))
 
 (defun undo-fu-session-save ()
-  "Save undo history."
+  "Save undo data."
   (interactive)
   (undo-fu-session-save-safe))
 
@@ -410,11 +408,11 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
           (setq content-header (read (current-buffer)))
 
           (unless (eq (buffer-size buffer) (assoc-default 'buffer-size content-header))
-            (message "File length doesn't match, so undo history will be discarded.")
+            (message "Undo-Fu-Session discarding undo data: file length mismatch")
             (throw 'exit nil))
 
           (unless (string-equal (sha1 buffer) (assoc-default 'buffer-checksum content-header))
-            (message "File checksum doesn't match, so undo history will be discarded.")
+            (message "Undo-Fu-Session discarding undo data: file checksum mismatch")
             (throw 'exit nil))
 
           ;; No errors... decode all undo data.
@@ -446,10 +444,10 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
       (undo-fu-session--recover-impl)
-      (error (message "Undo-Fu-Session can not recover undo history: %s" err)))))
+      (error (message "Undo-Fu-Session can not recover undo data: %s" err)))))
 
 (defun undo-fu-session-recover ()
-  "Recover undo history."
+  "Recover undo data."
   (interactive)
   (undo-fu-session-recover-safe))
 
@@ -477,7 +475,7 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
 
 ;;;###autoload
 (define-minor-mode undo-fu-session-mode
-  "Toggle saving the undo history in the current buffer (Undo-Fu Session Mode).."
+  "Toggle saving the undo data in the current buffer (Undo-Fu Session Mode)."
   :global nil
 
   (cond
