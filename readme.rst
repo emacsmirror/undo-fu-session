@@ -100,3 +100,27 @@ The package is available in melpa as ``undo-fu-session``, here is an example wit
      (setq undo-fu-session-incompatible-files '("COMMIT_EDITMSG$" "git-rebase-todo$")))
 
    (global-undo-fu-session-mode)
+
+
+Undo Tree (Evil Mode)
+---------------------
+
+At the time of writing undo-tree is enabled by default in evil-mode,
+This defines it's own undo data-structures and is not compatible with undo-fu-session,
+
+When using evil-mode be sure to run ``(global-undo-tree-mode -1)`` to avoid problems.
+
+
+Other Packages
+==============
+
+As there are multiple packages which deal with undo, it's worth mentioning how this interacts with other packages.
+
+`Undo Fu <https://gitlab.com/ideasman42/emacs-undo-fu>`__
+   This package is intended for use with undo-fu-session,
+   as a convenience wrapper over Emacs built-in undo.
+
+`Undohist <https://github.com/emacsorphanage/undohist>`__
+   This package also stores undo data between sessions,
+   however it doesn't store redo data making undo-only and redo-only
+   operations fail to skip branches of undo history.
