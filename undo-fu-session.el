@@ -58,7 +58,7 @@
   :type 'boolean)
 
 (defcustom undo-fu-session-incompatible-files '()
-  "List of regexps or functions for matching file names to ignore for undo session."
+  "List of REGEXP or FUNCTION for matching files to ignore for undo session."
   :group 'undo-fu-session
   :type '(repeat (choice regexp function)))
 

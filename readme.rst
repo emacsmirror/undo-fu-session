@@ -97,7 +97,7 @@ The package is available in melpa as ``undo-fu-session``, here is an example wit
 
    (use-package undo-fu-session
      :config
-     (setq undo-fu-session-incompatible-files '("COMMIT_EDITMSG$" "git-rebase-todo$")))
+     (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
 
    (global-undo-fu-session-mode)
 
