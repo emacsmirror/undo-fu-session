@@ -106,7 +106,7 @@ Undo Tree (Evil Mode)
 ---------------------
 
 At the time of writing undo-tree is enabled by default in evil-mode,
-This defines it's own undo data-structures and is not compatible with undo-fu-session,
+This defines it's own undo data-structures and is not compatible with ``undo-fu-session``.
 
 When using evil-mode be sure to run ``(global-undo-tree-mode -1)`` to avoid problems.
 
