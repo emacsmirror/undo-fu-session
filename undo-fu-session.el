@@ -446,9 +446,10 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
         ;; Assign undo data to the current buffer.
         (setq pending-undo-list emacs-pending-undo-list)
         (setq buffer-undo-list emacs-buffer-undo-list)
-        (if (hash-table-p emacs-undo-equiv-table)
-          (setq undo-equiv-table emacs-undo-equiv-table)
-          (clrhash undo-equiv-table))
+        ;; Merge the the hash-table since this is a global-variable, share between
+        ;; buffers otherwise this interferes with other buffers undo-only/redo.
+        (when (hash-table-p emacs-undo-equiv-table)
+          (maphash (lambda (key val) (puthash key val undo-equiv-table)) emacs-undo-equiv-table))
         t))))
 
 (defun undo-fu-session-recover-safe ()
