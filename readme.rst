@@ -76,6 +76,10 @@ Customization
 
 ``undo-fu-session-directory`` (``"undo-fu-session"`` in emacs user directory)
    The location of stored files.
+``undo-fu-session-linear`` (``nil``)
+   Write linear undo history, omitting branches which were themselves undone.
+
+   Note that this only writes undo steps which would be used by ``undo-only``.
 ``undo-fu-session-compression`` (``t``)
    Store files compressed.
 ``undo-fu-session-incompatible-files`` (``'()``)

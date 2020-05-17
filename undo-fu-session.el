@@ -7,7 +7,7 @@
 
 ;; URL: https://gitlab.com/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "24.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,11 @@
   "Persistent undo steps, stored on disk between sessions."
   :group 'convenience)
 
+(defcustom undo-fu-session-linear nil
+  "Store linear history (without redo)."
+  :group 'undo-fu-session
+  :type 'boolean)
+
 (defcustom undo-fu-session-directory
   (locate-user-emacs-file "undo-fu-session" ".emacs-undo-fu-session")
   "The directory to store undo data."
@@ -85,6 +90,32 @@
 Enforcing removes the oldest files."
   :type 'integer
   :group 'undo-fu-session)
+
+;; ---------------------------------------------------------------------------
+;; Undo List Make Linear
+;;
+;; Note that this only works for `buffer-undo-list', not `pending-undo-list'.
+
+(defun undo-fu-session--linear-undo-list (undo-list equiv-table)
+  (let ((linear-list nil))
+    (while
+      ;; Collapse all redo branches (giving the same results as if running 'undo-only')
+      (let ((undo-list-next nil))
+        (while (setq undo-list-next (gethash undo-list equiv-table))
+          (setq undo-list undo-list-next))
+        (and undo-list (not (eq t undo-list))))
+
+      ;; Pop all steps until the next boundary 'nil'.
+      (let ((undo-elt t))
+        (while undo-elt
+          (setq undo-elt (pop undo-list))
+          (push undo-elt linear-list))))
+
+    ;; Pass through 't', when there is no undo information.
+    ;; Also convert '(list nil)' to 't', since this is no undo info too.
+    (if (and linear-list (not (equal (list nil) linear-list)))
+      (nreverse linear-list)
+      t)))
 
 ;; ---------------------------------------------------------------------------
 ;; Undo Encode/Decode Functionality
@@ -348,18 +379,35 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
       (unless (or (consp buffer-undo-list) (consp pending-undo-list))
         (throw 'exit nil))
 
-      (setq content-header `((buffer-size . ,(buffer-size)) (buffer-checksum . ,(sha1 buffer))))
-      (setq content-data
-        `
-        ((emacs-pending-undo-list . ,(undo-fu-session--encode pending-undo-list))
-          (emacs-buffer-undo-list . ,(undo-fu-session--encode buffer-undo-list))
-          (emacs-undo-equiv-table
-            .
-            ,
-            (undo-fu-session--equivtable-encode
-              undo-equiv-table
-              buffer-undo-list
-              pending-undo-list)))))
+      (let
+        ( ;; Variables to build the 'content-data'.
+          (emacs-pending-undo-list nil)
+          (emacs-buffer-undo-list nil)
+          (emacs-undo-equiv-table nil))
+
+        (cond
+          ;; Simplified linear history (no redo).
+          (undo-fu-session-linear
+            (setq emacs-buffer-undo-list
+              (undo-fu-session--encode
+                (undo-fu-session--linear-undo-list buffer-undo-list undo-equiv-table))))
+          ;; Full non-linear history (full undo/redo).
+          (t
+            (setq emacs-buffer-undo-list (undo-fu-session--encode buffer-undo-list))
+            (setq emacs-pending-undo-list (undo-fu-session--encode pending-undo-list))
+            (setq emacs-undo-equiv-table
+              (undo-fu-session--equivtable-encode
+                undo-equiv-table
+                buffer-undo-list
+                pending-undo-list))))
+
+        (setq content-header
+          (list (cons 'buffer-size (buffer-size)) (cons 'buffer-checksum (sha1 buffer))))
+        (setq content-data
+          (list
+            (cons 'emacs-buffer-undo-list emacs-buffer-undo-list)
+            (cons 'emacs-pending-undo-list emacs-pending-undo-list)
+            (cons 'emacs-undo-equiv-table emacs-undo-equiv-table)))))
 
     (when content-data
       (setq undo-file (undo-fu-session--make-file-name filename))
