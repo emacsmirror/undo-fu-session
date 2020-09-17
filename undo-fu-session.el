@@ -111,11 +111,14 @@ Enforcing removes the oldest files."
           (setq undo-elt (pop undo-list))
           (push undo-elt linear-list))))
 
-    ;; Pass through 't', when there is no undo information.
-    ;; Also convert '(list nil)' to 't', since this is no undo info too.
+    ;; Pass through 'nil', when there is no undo information.
+    ;; Also convert '(list nil)' to 'nil', since this is no undo info too.
+    ;;
+    ;; Note that we use 'nil' as this is what `buffer-undo-list' is set
+    ;; to when there are no undo steps yet.
     (if (and linear-list (not (equal (list nil) linear-list)))
       (nreverse linear-list)
-      t)))
+      nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; Undo Encode/Decode Functionality
@@ -491,6 +494,13 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
               (assoc-default 'emacs-undo-equiv-table content-data #'eq '())
               emacs-buffer-undo-list
               emacs-pending-undo-list)))
+
+        ;; It's possible the history was saved with undo disabled.
+        ;; In this case simply reset the values so loading history never disables undo.
+        (when (eq t emacs-buffer-undo-list)
+          (setq emacs-buffer-undo-list nil)
+          (setq emacs-pending-undo-list nil)
+          (setq emacs-undo-equiv-table '()))
 
         ;; Assign undo data to the current buffer.
         (setq buffer-undo-list emacs-buffer-undo-list)
