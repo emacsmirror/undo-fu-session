@@ -381,8 +381,8 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
 
       (let
         ( ;; Variables to build the 'content-data'.
-          (emacs-pending-undo-list nil)
           (emacs-buffer-undo-list nil)
+          (emacs-pending-undo-list nil)
           (emacs-undo-equiv-table nil))
 
         (cond
@@ -481,10 +481,11 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
     (when content-data
       (let*
         (
-          (emacs-pending-undo-list
-            (undo-fu-session--decode (assoc-default 'emacs-pending-undo-list content-data #'eq t)))
           (emacs-buffer-undo-list
-            (undo-fu-session--decode (assoc-default 'emacs-buffer-undo-list content-data #'eq t)))
+            (undo-fu-session--decode (assoc-default 'emacs-buffer-undo-list content-data #'eq nil)))
+          (emacs-pending-undo-list
+            (undo-fu-session--decode
+              (assoc-default 'emacs-pending-undo-list content-data #'eq nil)))
           (emacs-undo-equiv-table
             (undo-fu-session--equivtable-decode
               (assoc-default 'emacs-undo-equiv-table content-data #'eq '())
@@ -492,8 +493,8 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
               emacs-pending-undo-list)))
 
         ;; Assign undo data to the current buffer.
-        (setq pending-undo-list emacs-pending-undo-list)
         (setq buffer-undo-list emacs-buffer-undo-list)
+        (setq pending-undo-list emacs-pending-undo-list)
         ;; Merge the the hash-table since this is a global-variable, share between
         ;; buffers otherwise this interferes with other buffers undo-only/redo.
         (when (hash-table-p emacs-undo-equiv-table)
