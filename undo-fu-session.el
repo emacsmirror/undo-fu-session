@@ -102,6 +102,10 @@ Enforcing removes the oldest files."
 ;; Note that this only works for `buffer-undo-list', not `pending-undo-list'.
 
 (defun undo-fu-session--linear-undo-list (undo-list equiv-table)
+  "Collapse UNDO-LIST using EQUIV-TABLE making it linear.
+
+This gives the same behavior as running `undo-only',
+ignoring all branches that aren't included in the current undo state."
   (let ((linear-list nil))
     (while
       ;; Collapse all redo branches (giving the same results as if running 'undo-only')
