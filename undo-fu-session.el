@@ -69,6 +69,11 @@
   :group 'undo-fu-session
   :type 'string)
 
+(defcustom undo-fu-session-ignore-encrypted-files t
+  "Ignore encrypted files for undo session."
+  :group 'undo-fu-session
+  :type 'boolean)
+
 (defcustom undo-fu-session-compression t
   "Store files compressed."
   :group 'undo-fu-session
@@ -353,6 +358,12 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
       (test-modes undo-fu-session-incompatible-major-modes))
     (cond
       ((null filename)
+        nil)
+      ( ;; Ignore encryped files.
+        (and
+          undo-fu-session-ignore-encrypted-files
+          epa-file-handler
+          (string-match-p (car epa-file-handler) filename))
         nil)
       ((and test-files (undo-fu-session--match-file-name filename test-files))
         nil)
