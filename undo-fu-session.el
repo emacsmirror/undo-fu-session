@@ -96,6 +96,17 @@ Enforcing removes the oldest files."
   :type 'integer
   :group 'undo-fu-session)
 
+
+;; ---------------------------------------------------------------------------
+;; Utility Functions
+;;
+
+(defmacro undo-fu-session--message-without-echo (str &rest args)
+  "Wrap `message' passing in STR and ARGS, without showing in the echo area."
+  `
+  (let ((inhibit-message t))
+    (message ,str ,@args)))
+
 ;; ---------------------------------------------------------------------------
 ;; Undo List Make Linear
 ;;
@@ -485,12 +496,22 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
           (goto-char (point-min))
           (setq content-header (read (current-buffer)))
 
+          ;; Use `undo-fu-session--message-without-echo' to avoid distracting the user
+          ;; when a common-place reason for failing to load is hit.
+          ;;
+          ;; These issues are common when working with others on documents.
+          ;; This way users may find out why undo didn't load if they need,
+          ;; without distracting them with noisy info.
           (unless (eq (buffer-size buffer) (assoc-default 'buffer-size content-header))
-            (message "Undo-Fu-Session discarding undo data: file length mismatch")
+            (undo-fu-session--message-without-echo
+              "Undo-Fu-Session discarding undo data: file length mismatch for %S"
+              filename)
             (throw 'exit nil))
 
           (unless (string-equal (sha1 buffer) (assoc-default 'buffer-checksum content-header))
-            (message "Undo-Fu-Session discarding undo data: file checksum mismatch")
+            (undo-fu-session--message-without-echo
+              "Undo-Fu-Session discarding undo data: file checksum mismatch for %S"
+              filename)
             (throw 'exit nil))
 
           ;; No errors... decode all undo data.
