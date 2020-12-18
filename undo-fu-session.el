@@ -119,7 +119,7 @@ This gives the same behavior as running `undo-only',
 ignoring all branches that aren't included in the current undo state."
   (let ((linear-list nil))
     (while
-      ;; Collapse all redo branches (giving the same results as if running 'undo-only')
+      ;; Collapse all redo branches (giving the same results as if running `undo-only')
       (let ((undo-list-next nil))
         (while (setq undo-list-next (gethash undo-list equiv-table))
           (setq undo-list undo-list-next))
@@ -397,7 +397,7 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
       (content-header nil)
       (content-data nil)
 
-      ;; Quiet compression messages for 'with-auto-compression-mode'.
+      ;; Quiet compression messages for `with-auto-compression-mode'.
       (jka-compr-verbose nil))
 
     (catch 'exit
@@ -409,7 +409,7 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
         (throw 'exit nil))
 
       (let
-        ( ;; Variables to build the 'content-data'.
+        ( ;; Variables to build the `content-data'.
           (emacs-buffer-undo-list nil)
           (emacs-pending-undo-list nil)
           (emacs-undo-equiv-table nil))
@@ -477,7 +477,7 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
       (content-header nil)
       (content-data nil)
 
-      ;; Quiet compression messages for 'with-auto-compression-mode'.
+      ;; Quiet compression messages for `with-auto-compression-mode'.
       (jka-compr-verbose nil))
 
     (catch 'exit
