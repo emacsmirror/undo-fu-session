@@ -17,6 +17,8 @@ The following features are supported:
 - Fast early-exit on restore
   *(only decode undo data if buffer length & checksum match).*
 
+Available via `melpa <https://melpa.org/#/undo-fu-session>`__.
+
 
 Motivation
 ==========
