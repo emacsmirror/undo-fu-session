@@ -579,12 +579,13 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
 
 (defun undo-fu-session-mode-turn-on ()
   "Enable command `undo-fu-session-mode'."
-  (when (and (not (minibufferp)) (not undo-fu-session-mode))
+  (when (and (not (minibufferp)) (not (bound-and-true-p undo-fu-session-mode)))
     (undo-fu-session-mode 1)))
 
 ;;;###autoload
 (define-minor-mode undo-fu-session-mode
   "Toggle saving the undo data in the current buffer (Undo-Fu Session Mode)."
+  :group 'undo-fu-session
   :global nil
 
   (cond
