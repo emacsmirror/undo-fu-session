@@ -62,17 +62,6 @@ you can enable this using a mode hook for e.g.
        (undo-fu-session-mode))
 
 
-Details
--------
-
-- Undo session information is stored in a directory,
-  with a corresponding file for each undo session.
-- Each file stores a length and checksum which is validated
-  before restoring the undo-session.
-- A mismatch with the file length or checksum will skip loading the undo session
-  with a message.
-
-
 Customization
 -------------
 
@@ -94,6 +83,17 @@ Customization
    Enforcing removes the oldest files.
 
 
+Details
+=======
+
+- Undo session information is stored in a directory,
+  with a corresponding file for each undo session.
+- Each file stores a length and checksum which is validated
+  before restoring the undo-session.
+- A mismatch with the file length or checksum will skip loading the undo session
+  with a message.
+
+
 Installation
 ============
 
@@ -108,13 +108,12 @@ The package is available in melpa as ``undo-fu-session``, here is an example wit
    (global-undo-fu-session-mode)
 
 
-Undo Tree (Evil Mode)
----------------------
+Undo Tree
+---------
 
-At the time of writing undo-tree is enabled by default in evil-mode,
-This defines it's own undo data-structures and is not compatible with ``undo-fu-session``.
+``undo-tree`` defines it's own undo data-structures and is not compatible with ``undo-fu-session``.
 
-When using evil-mode be sure to run ``(global-undo-tree-mode -1)`` to avoid problems.
+These packages cannot be used together.
 
 
 Other Packages
