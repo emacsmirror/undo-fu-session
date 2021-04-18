@@ -521,7 +521,8 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
       (let*
         (
           (emacs-buffer-undo-list
-            (undo-fu-session--decode (assoc-default 'emacs-buffer-undo-list content-data #'eq nil)))
+            (undo-fu-session--decode
+              (assoc-default 'emacs-buffer-undo-list content-data #'eq nil)))
           (emacs-pending-undo-list
             (undo-fu-session--decode
               (assoc-default 'emacs-pending-undo-list content-data #'eq nil)))
