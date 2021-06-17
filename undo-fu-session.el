@@ -580,7 +580,15 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
 
 (defun undo-fu-session-mode-turn-on ()
   "Enable command `undo-fu-session-mode'."
-  (when (and (not (minibufferp)) (not (bound-and-true-p undo-fu-session-mode)))
+  (when
+    (and
+      ;; Not already enabled.
+      (not (bound-and-true-p undo-fu-session-mode))
+      ;; Not in the mini-buffer.
+      (not (minibufferp))
+      ;; Not a special mode (package list, tabulated data ... etc)
+      ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
+      (not (derived-mode-p 'special-mode)))
     (undo-fu-session-mode 1)))
 
 ;;;###autoload

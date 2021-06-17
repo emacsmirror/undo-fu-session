@@ -5,6 +5,7 @@ Change Log
 
 - In development
 
+  - Disable ``global-undo-fu-session`` in ``special-mode`` and it's derived modes (such as ``package-menu-mode``).
   - Add ``undo-fu-session-ignore-encrypted-files`` to ignore encrypted files.
   - Fix bug when ``undo-fu-session-linear`` was enabled,
     causing an empty undo history to disable undo entirely on reload.
