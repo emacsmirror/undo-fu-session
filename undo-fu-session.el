@@ -607,7 +607,9 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
 (define-globalized-minor-mode
   global-undo-fu-session-mode
   undo-fu-session-mode
-  undo-fu-session-mode-turn-on)
+  undo-fu-session-mode-turn-on
+
+  :group 'undo-fu-session)
 
 (provide 'undo-fu-session)
 ;;; undo-fu-session.el ends here
