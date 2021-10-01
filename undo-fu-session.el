@@ -238,7 +238,9 @@ Argument LIST compatible list `buffer-undo-list'."
   list)
 
 (defun undo-fu-session--list-to-index-map (list index index-step step-to-index-hash)
-  "Populate the STEP-TO-INDEX-HASH with LIST element as keys mapping to INDEX by INDEX-STEP."
+  "Populate the STEP-TO-INDEX-HASH with LIST element.
+
+List elements are used as keys mapping to INDEX by INDEX-STEP."
   (unless (eq list t)
     (while list
       (puthash list index step-to-index-hash)
@@ -246,7 +248,9 @@ Argument LIST compatible list `buffer-undo-list'."
       (setq list (undo-fu-session--next-step list)))))
 
 (defun undo-fu-session--list-from-index-map (list index index-step step-from-index-hash)
-  "Populate the STEP-FROM-INDEX-HASH with INDEX by INDEX-STEP as keys mapping to LIST elements."
+  "Populate the STEP-FROM-INDEX-HASH with INDEX by INDEX-STEP.
+
+INDEX-STEP are used as keys mapping to LIST elements."
   (unless (eq list t)
     (while list
       (puthash index list step-from-index-hash)
