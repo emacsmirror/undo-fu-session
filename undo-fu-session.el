@@ -136,9 +136,11 @@ ignoring all branches that aren't included in the current undo state."
     ;;
     ;; Note that we use 'nil' as this is what `buffer-undo-list' is set
     ;; to when there are no undo steps yet.
-    (if (and linear-list (not (equal (list nil) linear-list)))
-      (nreverse linear-list)
-      nil)))
+    (cond
+      ((and linear-list (not (equal (list nil) linear-list)))
+        (nreverse linear-list))
+      (t
+        nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Undo Encode/Decode Functionality
@@ -148,34 +150,40 @@ ignoring all branches that aren't included in the current undo state."
   (cond
     ((consp tree)
       (let ((value (funcall fn tree)))
-        (if (eq value tree)
-          (let*
-            (
-              (cons (cons (undo-fu-session--walk-tree fn (car tree)) nil))
-              (cur cons)
-              cdr)
-            (while tree
-              (setq cdr (cdr tree))
-              (if (consp cdr)
-                (let ((next (cons (undo-fu-session--walk-tree fn (car cdr)) nil)))
-                  (setcdr cur next)
-                  (setq cur next)
-                  (setq tree cdr))
-                (setcdr cur (undo-fu-session--walk-tree fn cdr))
-                (setq tree nil)))
-            cons)
-          value)))
+        (cond
+          ((eq value tree)
+            (let*
+              (
+                (cons (cons (undo-fu-session--walk-tree fn (car tree)) nil))
+                (cur cons)
+                cdr)
+              (while tree
+                (setq cdr (cdr tree))
+                (cond
+                  ((consp cdr)
+                    (let ((next (cons (undo-fu-session--walk-tree fn (car cdr)) nil)))
+                      (setcdr cur next)
+                      (setq cur next)
+                      (setq tree cdr)))
+                  (t
+                    (setcdr cur (undo-fu-session--walk-tree fn cdr))
+                    (setq tree nil))))
+              cons))
+          (t
+            value))))
     ((vectorp tree)
       (let ((value (funcall fn tree)))
-        (if (eq value tree)
-          (let*
-            (
-              (length (length tree))
-              (vector (make-vector length nil)))
-            (dotimes (i (1- length))
-              (aset vector i (undo-fu-session--walk-tree fn (aref tree i))))
-            vector)
-          value)))
+        (cond
+          ((eq value tree)
+            (let*
+              (
+                (length (length tree))
+                (vector (make-vector length nil)))
+              (dotimes (i (1- length))
+                (aset vector i (undo-fu-session--walk-tree fn (aref tree i))))
+              vector))
+          (t
+            value))))
     (tree
       (funcall fn tree))))
 
@@ -186,9 +194,11 @@ ignoring all branches that aren't included in the current undo state."
       (cond
         ((markerp a)
           (cons
-            (if (marker-insertion-type a)
-              'marker*
-              'marker)
+            (cond
+              ((marker-insertion-type a)
+                'marker*)
+              (t
+                'marker))
             (marker-position a)))
         ((overlayp a)
           `(overlay ,(overlay-start a) ,(overlay-end a)))
@@ -202,29 +212,33 @@ ignoring all branches that aren't included in the current undo state."
   "Decode `TREE' so that it can be recovered as undo data."
   (undo-fu-session--walk-tree
     (lambda (a)
-      (if (consp a)
-        (cond
-          ((eq (car a) 'marker)
-            (set-marker (make-marker) (cdr a)))
-          ((eq (car a) 'marker*)
-            (let ((marker (make-marker)))
-              (set-marker marker (cdr a))
-              (set-marker-insertion-type marker t)
-              marker))
-          ((eq (car a) 'overlay)
-            (let
-              (
-                (start (cadr a))
-                (end (caddr a)))
-              (if (and start end)
-                (make-overlay (cadr a) (caddr a))
-                ;; Make deleted overlay
-                (let ((overlay (make-overlay (point-min) (point-min))))
-                  (delete-overlay overlay)
-                  overlay))))
-          (t
-            a))
-        a))
+      (cond
+        ((consp a)
+          (cond
+            ((eq (car a) 'marker)
+              (set-marker (make-marker) (cdr a)))
+            ((eq (car a) 'marker*)
+              (let ((marker (make-marker)))
+                (set-marker marker (cdr a))
+                (set-marker-insertion-type marker t)
+                marker))
+            ((eq (car a) 'overlay)
+              (let
+                (
+                  (start (cadr a))
+                  (end (caddr a)))
+                (cond
+                  ((and start end)
+                    (make-overlay (cadr a) (caddr a)))
+                  ;; Make deleted overlay
+                  (t
+                    (let ((overlay (make-overlay (point-min) (point-min))))
+                      (delete-overlay overlay)
+                      overlay)))))
+            (t
+              a)))
+        (t
+          a)))
     tree))
 
 (defun undo-fu-session--next-step (list)
@@ -276,9 +290,11 @@ Argument PENDING-LIST typically `pending-undo-list'."
           (
             (key-num (gethash key step-to-index-hash))
             (val-num
-              (if (eq t val)
-                t
-                (gethash val step-to-index-hash))))
+              (cond
+                ((eq t val)
+                  t)
+                (t
+                  (gethash val step-to-index-hash)))))
           (when (and key-num val-num)
             (push (cons key-num val-num) equiv-table-alist))))
       equiv-table)
@@ -309,9 +325,11 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
             (
               (key (gethash key-num step-from-index-hash))
               (val
-                (if (eq t val-num)
-                  t
-                  (gethash val-num step-from-index-hash))))
+                (cond
+                  ((eq t val-num)
+                    t)
+                  (t
+                    (gethash val-num step-from-index-hash)))))
             (puthash key val equiv-table-hash)))))
     equiv-table-hash))
 
@@ -354,18 +372,22 @@ Argument PENDING-LIST an `pending-undo-list'. compatible list."
     (expand-file-name
       (url-hexify-string (convert-standard-filename (expand-file-name filename)))
       undo-fu-session-directory)
-    (if undo-fu-session-compression
-      ".gz"
-      ".el")))
+    (cond
+      (undo-fu-session-compression
+        ".gz")
+      (t
+        ".el"))))
 
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
   (catch 'found
     (dolist (matcher test-files)
       (when
-        (if (stringp matcher)
-          (string-match-p matcher filename)
-          (funcall matcher filename))
+        (cond
+          ((stringp matcher)
+            (string-match-p matcher filename))
+          (t
+            (funcall matcher filename)))
         (throw 'found t)))))
 
 (defun undo-fu-session--recover-buffer-p (buffer)

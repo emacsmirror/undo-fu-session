@@ -56,8 +56,10 @@
         (let ((contents (buffer-string)))
           (set-buffer-modified-p nil)
           (kill-buffer (current-buffer))
-          (if (string-equal contents "")
-            (message "Test succeeded #%s" f)
-            (error "Test failed #%s" f)))))))
+          (cond
+            ((string-equal contents "")
+              (message "Test succeeded #%s" f))
+            (t
+              (error "Test failed #%s" f))))))))
 
 (message "Done")
