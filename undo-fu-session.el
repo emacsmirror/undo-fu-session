@@ -295,7 +295,7 @@ Argument PENDING-LIST typically `pending-undo-list'."
 (defun undo-fu-session--equivtable-decode (equiv-table-alist buffer-list pending-list)
   "Convert EQUIV-TABLE-ALIST into a hash compatible with `undo-equiv-table'.
 Argument BUFFER-LIST an `undo-buffer-list' compatible list.
-Argument PENDING-LIST an `pending-undo-list'. compatible list."
+Argument PENDING-LIST an `pending-undo-list' compatible list."
 
   (let*
     (
