@@ -56,7 +56,7 @@
 
 (defgroup undo-fu-session nil
   "Persistent undo steps, stored on disk between sessions."
-  :group 'convenience)
+  :group 'undo)
 
 (defcustom undo-fu-session-linear nil
   "Store linear history (without redo), otherwise store the full history."
