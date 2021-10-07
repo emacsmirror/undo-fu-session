@@ -1,9 +1,41 @@
+;;; undo-fu-session-test.el --- Undo-fu session test -*- lexical-binding: t -*-
+
+;; Copyright (C) 2020  Campbell Barton
+;; Copyright (C) 2009-2015  Tomohiro Matsuyama
+
+;; Author: Campbell Barton <ideasman42@gmail.com>
+
+;; URL: https://gitlab.com/ideasman42/emacs-undo-fu-session
+;; Keywords: convenience
+;; Version: 0.1
+;; Package-Requires: ((emacs "24.1"))
+
+;;; Commentary:
+
+;; This is a test for `undo-fu-session'.
+;;
+
+;;; Usage
+
+;;
 ;; To test this file run:
 ;; emacs --eval '(progn (add-to-list \'load-path ".") (load "undo-fu-session.el") (load "undo-fu-session-test.el"))' --batch
+;;
+
+;;; Code:
+
+
+;; Quiet byte code compilation warnings.
+(declare-function global-undo-fu-session-mode "undo-fu-session" ())
+(declare-function undo-fu-session--make-file-name "undo-fu-session" (filename))
+(declare-function undo-fu-session-recover "undo-fu-session" ())
+(declare-function undo-fu-session-save "undo-fu-session" ())
+
 
 (global-undo-fu-session-mode)
 
-(defmacro with-temp-dir (temp-dir &rest body)
+(defmacro undo-fu-session-test--with-temp-dir (temp-dir &rest body)
+  "Run BODY with TEMP-DIR directory."
   `
   (let ((,temp-dir (make-temp-file "" t)))
     (unwind-protect
@@ -11,7 +43,7 @@
         ,@body)
       (delete-directory ,temp-dir t))))
 
-(with-temp-dir
+(undo-fu-session-test--with-temp-dir
   ;; Don't touch the users home directory.
   undo-fu-session-directory
 
@@ -28,19 +60,18 @@
       (with-current-buffer (find-file-literally filename)
         (dotimes (_i 1000)
           (ignore-errors
-            (cl-case
-              (random 3)
-              (0
+            (pcase (random 3)
+              (`0
                 (dotimes (_j 10)
                   (insert (make-string (1+ (random 20)) (+ (random 26) 65)))))
-              (1 (newline))
-              (2 (insert "\t"))
-              (3 (forward-line))
-              (4 (forward-line -1))
-              (5 (kill-line))
-              (6 (kill-paragraph -1))
-              (7 (yank))
-              (8
+              (`1 (newline))
+              (`2 (insert "\t"))
+              (`3 (forward-line))
+              (`4 (forward-line -1))
+              (`5 (kill-line))
+              (`6 (kill-paragraph -1))
+              (`7 (yank))
+              (`8
                 (kill-region
                   (+ (point-min) (random (point-max)))
                   (+ (point-min) (random (point-max))))))))
@@ -63,3 +94,6 @@
               (error "Test failed #%s" f))))))))
 
 (message "Done")
+
+(provide 'undo-fu-session-test)
+;;; undo-fu-session-test.el ends here
