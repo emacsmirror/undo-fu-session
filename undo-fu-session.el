@@ -470,6 +470,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (write-char ?\n (current-buffer))
           (prin1 content-data (current-buffer))
           (write-region nil nil undo-file nil 0)
+          ;; This file should only readable by the owner, see #2.
+          (set-file-modes undo-file #o600)
           t)))))
 
 (defun undo-fu-session-save-safe ()
