@@ -470,8 +470,6 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (write-char ?\n (current-buffer))
           (prin1 content-data (current-buffer))
           (write-region nil nil undo-file nil 0)
-          ;; This file should only readable by the owner, see #2.
-          (set-file-modes undo-file #o600)
           t)))))
 
 (defun undo-fu-session-save-safe ()
@@ -588,7 +586,9 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (defun undo-fu-session-mode-enable ()
   "Turn on 'undo-fu-session-mode' for the current buffer."
   (unless (file-directory-p undo-fu-session-directory)
-    (make-directory undo-fu-session-directory t))
+    (make-directory undo-fu-session-directory t)
+    ;; These files should only readable by the owner, see #2.
+    (set-file-modes undo-fu-session-directory #o700))
   (add-hook 'before-save-hook #'undo-fu-session-save-safe)
   (add-hook 'find-file-hook #'undo-fu-session-recover-safe))
 
