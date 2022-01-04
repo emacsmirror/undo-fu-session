@@ -332,7 +332,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   ;; While errors are highly unlikely in this case,
   ;; clearing old files should _never_ interfere with other operations,
   ;; so surround with error a check & error message.
-  (condition-case err_1
+  (condition-case err-1
     (when (file-directory-p undo-fu-session-directory)
       (dolist
         (file-with-attrs
@@ -349,10 +349,14 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                   (directory-files-and-attributes undo-fu-session-directory t nil t)))
               (lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
         (let ((file (car file-with-attrs)))
-          (condition-case err_2
+          (condition-case err-2
             (delete-file file)
-            (error (message "Undo-Fu-Session error deleting '%s' for '%s'" err_2 file))))))
-    (error (message "Undo-Fu-Session error limiting files '%s'" err_1))))
+            (error
+              (message
+                "Undo-Fu-Session error deleting '%s' for '%s'"
+                (error-message-string err-2)
+                file))))))
+    (error (message "Undo-Fu-Session error limiting files '%s'" (error-message-string err-1)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Undo Save/Restore Functionality
@@ -477,7 +481,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
       (undo-fu-session--save-impl)
-      (error (message "Undo-Fu-Session can not save undo data: %s" err)))))
+      (error (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err))))))
 
 (defun undo-fu-session-save ()
   "Save undo data."
@@ -570,7 +574,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
       (undo-fu-session--recover-impl)
-      (error (message "Undo-Fu-Session can not recover undo data: %s" err)))))
+      (error
+        (message "Undo-Fu-Session can not recover undo data: %s" (error-message-string err))))))
 
 (defun undo-fu-session-recover ()
   "Recover undo data."
