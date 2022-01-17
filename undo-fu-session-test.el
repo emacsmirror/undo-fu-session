@@ -19,20 +19,21 @@
 
 ;;
 ;; To test this file run:
-;; emacs --eval '(progn (add-to-list \'load-path ".") (load "undo-fu-session.el") (load "undo-fu-session-test.el"))' --batch
+;;
+;;     `emacs -batch -l undo-fu-session-test.el -f undo-fu-session-test-run-all'
 ;;
 
 ;;; Code:
 
+;; ---------------------------------------------------------------------------
+;; Setup Environment
 
-;; Quiet byte code compilation warnings.
-(declare-function global-undo-fu-session-mode "undo-fu-session" ())
-(declare-function undo-fu-session--make-file-name "undo-fu-session" (filename))
-(declare-function undo-fu-session-recover "undo-fu-session" ())
-(declare-function undo-fu-session-save "undo-fu-session" ())
+(add-to-list 'load-path (file-name-directory load-file-name))
+(require 'undo-fu-session)
 
 
-(global-undo-fu-session-mode)
+;; ---------------------------------------------------------------------------
+;; Internal Macros
 
 (defmacro undo-fu-session-test--with-temp-dir (temp-dir &rest body)
   "Run BODY with TEMP-DIR directory."
@@ -43,57 +44,75 @@
         ,@body)
       (delete-directory ,temp-dir t))))
 
-(undo-fu-session-test--with-temp-dir
-  ;; Don't touch the users home directory.
-  undo-fu-session-directory
 
-  (dotimes (f 100)
-    (let*
-      ( ;; While the session file wouldn't typically
-        ;; be in the same directory as the undo session data, it's harmless.
-        (filename (concat undo-fu-session-directory "/undo-fu-session-test"))
-        (filename-session (undo-fu-session--make-file-name filename)))
-      (when (file-exists-p filename)
-        (delete-file filename))
-      (when (file-exists-p filename-session)
-        (delete-file filename-session))
-      (with-current-buffer (find-file-literally filename)
-        (dotimes (_i 1000)
+;; ---------------------------------------------------------------------------
+;; Tests
+
+(defun undo-fu-session-test-run-all-impl ()
+  "Run each test and exit."
+
+  (undo-fu-session-test--with-temp-dir
+    ;; Don't touch the users home directory.
+    undo-fu-session-directory
+
+    (dotimes (f 100)
+      (let*
+        ( ;; While the session file wouldn't typically
+          ;; be in the same directory as the undo session data, it's harmless.
+          (filename (concat undo-fu-session-directory "/undo-fu-session-test"))
+          (filename-session (undo-fu-session--make-file-name filename)))
+        (when (file-exists-p filename)
+          (delete-file filename))
+        (when (file-exists-p filename-session)
+          (delete-file filename-session))
+        (with-current-buffer (find-file-literally filename)
+          (dotimes (_i 1000)
+            (ignore-errors
+              (pcase (random 3)
+                (`0
+                  (dotimes (_j 10)
+                    (insert (make-string (1+ (random 20)) (+ (random 26) 65)))))
+                (`1 (newline))
+                (`2 (insert "\t"))
+                (`3 (forward-line))
+                (`4 (forward-line -1))
+                (`5 (kill-line))
+                (`6 (kill-paragraph -1))
+                (`7 (yank))
+                (`8
+                  (kill-region
+                    (+ (point-min) (random (point-max)))
+                    (+ (point-min) (random (point-max))))))))
+          (save-buffer)
+          (undo-fu-session-save)
+          (kill-buffer (current-buffer)))
+        (with-current-buffer (find-file-literally filename)
+          (undo-fu-session-recover)
           (ignore-errors
-            (pcase (random 3)
-              (`0
-                (dotimes (_j 10)
-                  (insert (make-string (1+ (random 20)) (+ (random 26) 65)))))
-              (`1 (newline))
-              (`2 (insert "\t"))
-              (`3 (forward-line))
-              (`4 (forward-line -1))
-              (`5 (kill-line))
-              (`6 (kill-paragraph -1))
-              (`7 (yank))
-              (`8
-                (kill-region
-                  (+ (point-min) (random (point-max)))
-                  (+ (point-min) (random (point-max))))))))
-        (save-buffer)
-        (undo-fu-session-save)
-        (kill-buffer (current-buffer)))
-      (with-current-buffer (find-file-literally filename)
-        (undo-fu-session-recover)
-        (ignore-errors
-          (while
-            (prog1 t
-              (undo))))
-        (let ((contents (buffer-string)))
-          (set-buffer-modified-p nil)
-          (kill-buffer (current-buffer))
-          (cond
-            ((string-equal contents "")
-              (message "Test succeeded #%s" f))
-            (t
-              (error "Test failed #%s" f))))))))
+            (while
+              (prog1 t
+                (undo))))
+          (let ((contents (buffer-string)))
+            (set-buffer-modified-p nil)
+            (kill-buffer (current-buffer))
+            (cond
+              ((string-equal contents "")
+                (message "Test succeeded #%s" f))
+              (t
+                (error "Test failed #%s" f))))))))
 
-(message "Done")
+  (message "Done"))
+
+(defun undo-fu-session-test-run-all ()
+  "Run all tests."
+
+  (global-undo-fu-session-mode)
+
+  (setq undo-fu-session-linear t)
+  (undo-fu-session-test-run-all-impl)
+
+  (setq undo-fu-session-linear nil)
+  (undo-fu-session-test-run-all-impl))
 
 (provide 'undo-fu-session-test)
 ;;; undo-fu-session-test.el ends here
