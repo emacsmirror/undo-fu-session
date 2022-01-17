@@ -20,7 +20,7 @@
 ;;
 ;; To test this file run:
 ;;
-;;     `emacs -batch -l undo-fu-session-test.el -f undo-fu-session-test-run-all'
+;;     `emacs -batch -l tests/undo-fu-session-test.el -f undo-fu-session-test-run-all'
 ;;
 
 ;;; Code:
@@ -28,7 +28,7 @@
 ;; ---------------------------------------------------------------------------
 ;; Setup Environment
 
-(add-to-list 'load-path (file-name-directory load-file-name))
+(add-to-list 'load-path (concat (file-name-directory load-file-name) ".."))
 (require 'undo-fu-session)
 
 
@@ -104,13 +104,15 @@
   (message "Done"))
 
 (defun undo-fu-session-test-run-all ()
-  "Run all tests."
+  "Run every test."
 
   (global-undo-fu-session-mode)
 
+  (message "Running with `undo-fu-session-linear' enabled:")
   (setq undo-fu-session-linear t)
   (undo-fu-session-test-run-all-impl)
 
+  (message "Running with `undo-fu-session-linear' disabled:")
   (setq undo-fu-session-linear nil)
   (undo-fu-session-test-run-all-impl))
 
