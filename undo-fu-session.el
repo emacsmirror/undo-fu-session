@@ -96,19 +96,24 @@ Enforcing removes the oldest files."
 
 This gives the same behavior as running `undo-only',
 ignoring all branches that aren't included in the current undo state."
-  (let ((linear-list nil))
-    (while
-      ;; Collapse all redo branches (giving the same results as if running `undo-only')
-      (let ((undo-list-next nil))
-        (while (setq undo-list-next (gethash undo-list equiv-table))
-          (setq undo-list undo-list-next))
-        (and undo-list (not (eq t undo-list))))
+  (let ((linear-list (cons nil nil)))
+    ;; Store the last `cons' cell to build a list in-order
+    ;; (saves pushing to the front of the list then reversing).
+    (let ((tail-cdr linear-list))
+      (while
+        ;; Collapse all redo branches (giving the same results as if running `undo-only')
+        (let ((undo-list-next nil))
+          (while (setq undo-list-next (gethash undo-list equiv-table))
+            (setq undo-list undo-list-next))
+          (and undo-list (not (eq t undo-list))))
 
-      ;; Pop all steps until the next boundary 'nil'.
-      (let ((undo-elt t))
-        (while undo-elt
-          (setq undo-elt (pop undo-list))
-          (push undo-elt linear-list))))
+        ;; Pop all steps until the next boundary 'nil'.
+        (let ((undo-elt t))
+          (while undo-elt
+            (setq undo-elt (pop undo-list))
+            (setq tail-cdr (setcdr tail-cdr (cons undo-elt nil))))))
+      ;; Remove the place holder `cons' cell.
+      (setq linear-list (cdr linear-list)))
 
     ;; Pass through 'nil', when there is no undo information.
     ;; Also convert '(list nil)' to 'nil', since this is no undo info too.
@@ -117,7 +122,7 @@ ignoring all branches that aren't included in the current undo state."
     ;; to when there are no undo steps yet.
     (cond
       ((and linear-list (not (equal (list nil) linear-list)))
-        (nreverse linear-list))
+        linear-list)
       (t
         nil))))
 
