@@ -518,13 +518,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           ;; without distracting them with noisy info.
           (unless (eq (buffer-size buffer) (assoc-default 'buffer-size content-header))
             (undo-fu-session--message-without-echo
-              "Undo-Fu-Session discarding undo data: file length mismatch for %S"
+              "Undo-Fu-Session discarding: file length mismatch for %S"
               filename)
             (throw 'exit nil))
 
           (unless (string-equal (sha1 buffer) (assoc-default 'buffer-checksum content-header))
             (undo-fu-session--message-without-echo
-              "Undo-Fu-Session discarding undo data: file checksum mismatch for %S"
+              "Undo-Fu-Session discarding: file checksum mismatch for %S"
               filename)
             (throw 'exit nil))
 
