@@ -9,7 +9,7 @@
 ;; URL: https://gitlab.com/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
 ;; Version: 0.2
-;; Package-Requires: ((emacs "24.1"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
 
@@ -357,9 +357,9 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (defun undo-fu-session--make-file-name (filename)
   "Take the path FILENAME and return a name base on this."
   (concat
-    (expand-file-name
-      (url-hexify-string (convert-standard-filename (expand-file-name filename)))
-      undo-fu-session-directory)
+    (file-name-concat
+      undo-fu-session-directory
+      (url-hexify-string (convert-standard-filename (expand-file-name filename))))
     (cond
       (undo-fu-session-compression
         ".gz")
