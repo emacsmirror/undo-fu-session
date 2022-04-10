@@ -59,7 +59,20 @@
   "Ignore encrypted files for undo session."
   :type 'boolean)
 
-(defcustom undo-fu-session-compression t "Store files compressed." :type 'boolean)
+(defcustom undo-fu-session-compression 'gz
+  "The type of compression to use or nil.
+
+After changing, run `undo-fu-session-compression-update'
+to convert existing files to the newly selected format."
+  :type
+  '
+  (choice
+    (const :tag "BZip2" bzip2)
+    (const :tag "GZip" gz)
+    (const :tag "XZ" xz)
+    (const :tag "ZSTD" zstd)
+
+    (const :tag "No Compression" nil)))
 
 (defcustom undo-fu-session-incompatible-files '()
   "List of REGEXP or FUNCTION for matching files to ignore for undo session."
@@ -351,8 +364,80 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                 file))))))
     (error (message "Undo-Fu-Session error limiting files '%s'" (error-message-string err-1)))))
 
+
+;; ---------------------------------------------------------------------------
+;; Undo Session Compression Conversion Functionality
+
+(defun undo-fu-session--compression-update-impl ()
+  "Use the current compression settings."
+  (let
+    ( ;; Quiet compression messages for `with-auto-compression-mode'.
+      (jka-compr-verbose nil)
+      ;; The new extension to use.
+      (ext-dst (undo-fu-session--file-name-ext))
+      ;; The files to operate on
+      (files-to-convert (list))
+      (count-complete 0)
+      (count-pending 0)
+      (size-src 0)
+      (size-dst 0))
+
+    (dolist
+      (file-src
+        (cond
+          ((file-directory-p undo-fu-session-directory)
+            (directory-files undo-fu-session-directory))
+          (t
+            (list))))
+      (let ((file-src-full (file-name-concat undo-fu-session-directory file-src)))
+        (unless (file-directory-p file-src-full)
+          (unless (string-suffix-p ext-dst file-src)
+            (setq count-pending (1+ count-pending))
+            (push file-src-full files-to-convert)))))
+
+    (message "Operating on %d file(s) in \"%s\"" count-pending undo-fu-session-directory)
+    (with-auto-compression-mode
+      (dolist (file-src-full files-to-convert)
+        (let ((file-dst-full (file-name-with-extension file-src-full ext-dst)))
+          (message
+            "File %d of %d: %s"
+            count-complete
+            count-pending
+            (file-name-nondirectory file-dst-full))
+          (condition-case-unless-debug err
+            (progn
+              (with-temp-buffer
+                (insert-file-contents file-src-full)
+                (write-region nil nil file-dst-full nil 0))
+
+              (setq size-src (+ size-src (file-attribute-size (file-attributes file-src-full))))
+              (setq size-dst (+ size-dst (file-attribute-size (file-attributes file-dst-full))))
+
+              (delete-file file-src-full)
+              (setq count-complete (1+ count-complete)))
+
+            (error (message "Error: %s" (error-message-string err)))))))
+
+    (message
+      "Completed %d file(s) (size was %s, now %s)"
+      count-complete
+      (file-size-human-readable size-src)
+      (file-size-human-readable size-dst))))
+
+
 ;; ---------------------------------------------------------------------------
 ;; Undo Save/Restore Functionality
+
+(defun undo-fu-session--file-name-ext ()
+  "Return the current file name extension in use."
+  (cond
+    ((symbolp undo-fu-session-compression)
+      (concat "." (symbol-name undo-fu-session-compression)))
+    ((eq undo-fu-session-compression t)
+      ;; Used for older versions where compression was a boolean.
+      ".gz")
+    (t
+      ".el")))
 
 (defun undo-fu-session--make-file-name (filename)
   "Take the path FILENAME and return a name base on this."
@@ -360,11 +445,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (file-name-concat
       undo-fu-session-directory
       (url-hexify-string (convert-standard-filename (expand-file-name filename))))
-    (cond
-      (undo-fu-session-compression
-        ".gz")
-      (t
-        ".el"))))
+    (undo-fu-session--file-name-ext)))
 
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
@@ -574,6 +655,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   "Recover undo data."
   (interactive)
   (undo-fu-session-recover-safe))
+
+;;;###autoload
+(defun undo-fu-session-compression-update ()
+  "Update existing undo session data after changing compression settings."
+  (interactive)
+  (undo-fu-session--compression-update-impl))
+
 
 ;; ---------------------------------------------------------------------------
 ;; Define Minor Mode

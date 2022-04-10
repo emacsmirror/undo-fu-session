@@ -5,6 +5,8 @@ Change Log
 
 - In development
 
+  - Support conversion of existing undo data to other formats via ``undo-fu-session-compression-update``.
+  - Support different compression formats (``bzip2``, ``gzip``, ``xz`` & ``zstd``)
   - Set permissions on the directory only only be readable by the owner (to avoid potential security issues).
   - Disable ``global-undo-fu-session`` in ``special-mode`` and it's derived modes (such as ``package-menu-mode``).
   - Add ``undo-fu-session-ignore-encrypted-files`` to ignore encrypted files.
