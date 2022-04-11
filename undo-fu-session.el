@@ -510,7 +510,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (emacs-undo-equiv-table nil))
 
         (cond
-          ;; Simplified linear history (no redo).
+          ;; Simplified linear history (no redo or implicit tree-structure).
+          ;; Only store steps reachable by calling `undo-only'.
           (undo-fu-session-linear
             (setq emacs-buffer-undo-list
               (undo-fu-session--encode
