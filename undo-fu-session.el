@@ -198,7 +198,7 @@ ignoring all branches that aren't included in the current undo state."
                 'marker))
             (marker-position a)))
         ((overlayp a)
-          `(overlay ,(overlay-start a) ,(overlay-end a)))
+          (list 'overlay (overlay-start a) (overlay-end a)))
         ((stringp a)
           (substring-no-properties a))
         (t
