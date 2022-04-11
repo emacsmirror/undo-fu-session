@@ -597,13 +597,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           ;; These issues are common when working with others on documents.
           ;; This way users may find out why undo didn't load if they need,
           ;; without distracting them with noisy info.
-          (unless (eq (buffer-size buffer) (assoc-default 'buffer-size content-header))
+          (unless (= (buffer-size buffer) (cdr (assoc 'buffer-size content-header)))
             (undo-fu-session--message-without-echo
               "Undo-Fu-Session discarding: file length mismatch for %S"
               filename)
             (throw 'exit nil))
 
-          (unless (string-equal (sha1 buffer) (assoc-default 'buffer-checksum content-header))
+          (unless (string-equal (sha1 buffer) (cdr (assoc 'buffer-checksum content-header)))
             (undo-fu-session--message-without-echo
               "Undo-Fu-Session discarding: file checksum mismatch for %S"
               filename)
@@ -614,16 +614,16 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
     (when content-data
       (let*
-        (
+        ( ;; `emacs-buffer-undo-list' may not exist, nil is OK.
           (emacs-buffer-undo-list
-            (undo-fu-session--decode
-              (assoc-default 'emacs-buffer-undo-list content-data #'eq nil)))
+            (undo-fu-session--decode (cdr (assoc 'emacs-buffer-undo-list content-data))))
+          ;; `emacs-pending-undo-list' may not exist, nil is OK.
           (emacs-pending-undo-list
-            (undo-fu-session--decode
-              (assoc-default 'emacs-pending-undo-list content-data #'eq nil)))
+            (undo-fu-session--decode (cdr (assoc 'emacs-pending-undo-list content-data))))
+          ;; `emacs-undo-equiv-table' may not exist, nil is OK as it's treated as an empty list.
           (emacs-undo-equiv-table
             (undo-fu-session--equivtable-decode
-              (assoc-default 'emacs-undo-equiv-table content-data #'eq '())
+              (cdr (assoc 'emacs-undo-equiv-table content-data))
               emacs-buffer-undo-list
               emacs-pending-undo-list)))
 
