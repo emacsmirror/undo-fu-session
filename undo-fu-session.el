@@ -152,19 +152,18 @@ ignoring all branches that aren't included in the current undo state."
             (let*
               (
                 (cons (cons (undo-fu-session--walk-tree fn (car tree)) nil))
-                (cur cons)
-                cdr)
+                (cur cons))
               (while tree
-                (setq cdr (cdr tree))
-                (cond
-                  ((consp cdr)
-                    (let ((next (cons (undo-fu-session--walk-tree fn (car cdr)) nil)))
-                      (setcdr cur next)
-                      (setq cur next)
-                      (setq tree cdr)))
-                  (t
-                    (setcdr cur (undo-fu-session--walk-tree fn cdr))
-                    (setq tree nil))))
+                (let ((cdr (cdr tree)))
+                  (cond
+                    ((consp cdr)
+                      (let ((next (cons (undo-fu-session--walk-tree fn (car cdr)) nil)))
+                        (setcdr cur next)
+                        (setq cur next)
+                        (setq tree cdr)))
+                    (t
+                      (setcdr cur (undo-fu-session--walk-tree fn cdr))
+                      (setq tree nil)))))
               cons))
           (t
             value))))
