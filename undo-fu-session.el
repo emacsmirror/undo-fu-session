@@ -67,10 +67,10 @@ to convert existing files to the newly selected format."
   :type
   '
   (choice
-    (const :tag "BZip2" bzip2)
+    (const :tag "BZip2" bz2)
     (const :tag "GZip" gz)
     (const :tag "XZ" xz)
-    (const :tag "ZSTD" zstd)
+    (const :tag "Z-Standard" zst)
 
     (const :tag "No Compression" nil)))
 

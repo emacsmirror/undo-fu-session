@@ -71,7 +71,7 @@ Customization
    Write linear undo history, omitting branches which were themselves undone.
 
    Note that this only writes undo steps which would be used by ``undo-only``.
-``undo-fu-session-compression`` (``'bzip2`` ``'gz`` ``'xz`` ``'zstd`` ``nil``)
+``undo-fu-session-compression`` (``'bz2`` ``'gz`` ``'xz`` ``'zst`` ``nil``)
    Compression setting for stored undo data.
 
    After changing, run ``undo-fu-session-compression-update`` to convert existing files to the newly selected format.
