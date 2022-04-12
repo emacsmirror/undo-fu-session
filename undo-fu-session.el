@@ -674,7 +674,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (unless (file-directory-p undo-fu-session-directory)
     (make-directory undo-fu-session-directory t)
     ;; These files should only readable by the owner, see #2.
-    (set-file-modes undo-fu-session-directory #o700))
+    (set-file-modes undo-fu-session-directory #o600))
   (add-hook 'before-save-hook #'undo-fu-session-save-safe)
   (add-hook 'find-file-hook #'undo-fu-session-recover-safe))
 
