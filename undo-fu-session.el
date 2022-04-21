@@ -1,7 +1,7 @@
 ;;; undo-fu-session.el --- Persistent undo, available between sessions -*- lexical-binding: t -*-
 
-;; SPDX-License-Identifier: GPL-2.0-or-later
-;; Copyright (C) 2020  Campbell Barton
+;; SPDX-License-Identifier: GPL-3.0-or-later
+;; Copyright (C) 2020-2022  Campbell Barton
 ;; Copyright (C) 2009-2015  Tomohiro Matsuyama
 
 ;; Author: Campbell Barton <ideasman42@gmail.com>
