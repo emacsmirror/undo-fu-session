@@ -677,6 +677,19 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 ;; Developer note, use global hooks since these run before buffers are loaded.
 ;; Each function checks if the local mode is active before operating.
 
+(defun undo-fu-session--mode-in-any-buffer ()
+  "Return non-nil if the `undo-fu-session-mode' is enabled in any buffer."
+  (let
+    (
+      (mode-in-any-buffer nil)
+      (buffers (buffer-list)))
+    (while buffers
+      (let ((buf (pop buffers)))
+        (when (buffer-local-value 'undo-fu-session-mode buf)
+          (setq mode-in-any-buffer t)
+          (setq buffers nil))))
+    mode-in-any-buffer))
+
 (defun undo-fu-session-mode-enable ()
   "Turn on 'undo-fu-session-mode' for the current buffer."
   (unless (file-directory-p undo-fu-session-directory)
@@ -689,8 +702,9 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session-mode-disable ()
   "Turn off 'undo-fu-session-mode' for the current buffer."
-  (remove-hook 'write-file-functions #'undo-fu-session-save-safe t)
-  (remove-hook 'find-file-hook #'undo-fu-session-recover-safe t))
+  (unless (undo-fu-session--mode-in-any-buffer)
+    (remove-hook 'write-file-functions #'undo-fu-session-save-safe)
+    (remove-hook 'find-file-hook #'undo-fu-session-recover-safe)))
 
 (defun undo-fu-session-mode-turn-on ()
   "Enable command `undo-fu-session-mode'."
