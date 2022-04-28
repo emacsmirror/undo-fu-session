@@ -458,6 +458,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
             (funcall matcher filename)))
         (throw 'found t)))))
 
+(defun undo-fu-session--directory-ensure ()
+  (unless (file-directory-p undo-fu-session-directory)
+    (make-directory undo-fu-session-directory t)
+    ;; These files should only readable by the owner, see #2.
+    ;; Setting the executable bit is important for directories to be writable.
+    (set-file-modes undo-fu-session-directory #o700)))
+
 (defun undo-fu-session--recover-buffer-p (buffer)
   "Return t if undo data of BUFFER should be recovered."
   (let
@@ -483,6 +490,10 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--save-impl ()
   "Internal save logic, resulting in t on success."
+
+  ;; Paranoid as it's possible the directory was removed since the mode was enabled.
+  (undo-fu-session--directory-ensure)
+
   (let
     (
       (buffer (current-buffer))
@@ -692,11 +703,10 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session-mode-enable ()
   "Turn on 'undo-fu-session-mode' for the current buffer."
-  (unless (file-directory-p undo-fu-session-directory)
-    (make-directory undo-fu-session-directory t)
-    ;; These files should only readable by the owner, see #2.
-    ;; Setting the executable bit is important for directories to be writable.
-    (set-file-modes undo-fu-session-directory #o700))
+  ;; Even though this runs on save, call here since it's better the user catches
+  ;; errors when the mode is enabled instead of having the hook fail.
+  (undo-fu-session--directory-ensure)
+
   (add-hook 'write-file-functions #'undo-fu-session-save-safe)
   (add-hook 'find-file-hook #'undo-fu-session-recover-safe))
 
