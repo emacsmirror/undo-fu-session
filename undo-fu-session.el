@@ -564,7 +564,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (write-region nil nil undo-file nil 0)
           t)))))
 
-(defun undo-fu-session-save-safe ()
+(defun undo-fu-session--save-safe ()
   "Public save function, typically called by `write-file-functions'."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
@@ -572,11 +572,6 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (error (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err)))))
   ;; Important to return NIL, to show the file wasn't saved.
   nil)
-
-(defun undo-fu-session-save ()
-  "Save undo data."
-  (interactive)
-  (undo-fu-session-save-safe))
 
 (defun undo-fu-session--recover-impl ()
   "Internal restore logic, resulting in t on success."
@@ -662,7 +657,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (maphash (lambda (key val) (puthash key val undo-equiv-table)) emacs-undo-equiv-table))
         t))))
 
-(defun undo-fu-session-recover-safe ()
+(defun undo-fu-session--recover-safe ()
   "Public restore function, typically called by `find-file-hook'."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
@@ -670,10 +665,21 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (error
         (message "Undo-Fu-Session can not recover undo data: %s" (error-message-string err))))))
 
+
+;; ---------------------------------------------------------------------------
+;; Public Functions
+
+;;;###autoload
+(defun undo-fu-session-save ()
+  "Save undo data."
+  (interactive)
+  (undo-fu-session--save-safe))
+
+;;;###autoload
 (defun undo-fu-session-recover ()
   "Recover undo data."
   (interactive)
-  (undo-fu-session-recover-safe))
+  (undo-fu-session--recover-safe))
 
 ;;;###autoload
 (defun undo-fu-session-compression-update ()
@@ -701,22 +707,22 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (setq buffers nil))))
     mode-in-any-buffer))
 
-(defun undo-fu-session-mode-enable ()
+(defun undo-fu-session--mode-enable ()
   "Turn on 'undo-fu-session-mode' for the current buffer."
   ;; Even though this runs on save, call here since it's better the user catches
   ;; errors when the mode is enabled instead of having the hook fail.
   (undo-fu-session--directory-ensure)
 
-  (add-hook 'write-file-functions #'undo-fu-session-save-safe)
-  (add-hook 'find-file-hook #'undo-fu-session-recover-safe))
+  (add-hook 'write-file-functions #'undo-fu-session--save-safe)
+  (add-hook 'find-file-hook #'undo-fu-session--recover-safe))
 
-(defun undo-fu-session-mode-disable ()
+(defun undo-fu-session--mode-disable ()
   "Turn off 'undo-fu-session-mode' for the current buffer."
   (unless (undo-fu-session--mode-in-any-buffer)
-    (remove-hook 'write-file-functions #'undo-fu-session-save-safe)
-    (remove-hook 'find-file-hook #'undo-fu-session-recover-safe)))
+    (remove-hook 'write-file-functions #'undo-fu-session--save-safe)
+    (remove-hook 'find-file-hook #'undo-fu-session--recover-safe)))
 
-(defun undo-fu-session-mode-turn-on ()
+(defun undo-fu-session--mode-turn-on ()
   "Enable command `undo-fu-session-mode'."
   (when
     (and
@@ -736,15 +742,15 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
   (cond
     (undo-fu-session-mode
-      (undo-fu-session-mode-enable))
+      (undo-fu-session--mode-enable))
     (t
-      (undo-fu-session-mode-disable))))
+      (undo-fu-session--mode-disable))))
 
 ;;;###autoload
 (define-globalized-minor-mode
   global-undo-fu-session-mode
   undo-fu-session-mode
-  undo-fu-session-mode-turn-on)
+  undo-fu-session--mode-turn-on)
 
 (provide 'undo-fu-session)
 ;;; undo-fu-session.el ends here
