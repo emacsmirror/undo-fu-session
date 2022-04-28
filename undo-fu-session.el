@@ -554,11 +554,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           t)))))
 
 (defun undo-fu-session-save-safe ()
-  "Public save function, typically called by `before-save-hook'."
+  "Public save function, typically called by `write-file-functions'."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
       (undo-fu-session--save-impl)
-      (error (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err))))))
+      (error (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err)))))
+  ;; Important to return NIL, to show the file wasn't saved.
+  nil)
 
 (defun undo-fu-session-save ()
   "Save undo data."
@@ -682,12 +684,12 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     ;; These files should only readable by the owner, see #2.
     ;; Setting the executable bit is important for directories to be writable.
     (set-file-modes undo-fu-session-directory #o700))
-  (add-hook 'before-save-hook #'undo-fu-session-save-safe)
+  (add-hook 'write-file-functions #'undo-fu-session-save-safe)
   (add-hook 'find-file-hook #'undo-fu-session-recover-safe))
 
 (defun undo-fu-session-mode-disable ()
   "Turn off 'undo-fu-session-mode' for the current buffer."
-  (remove-hook 'before-save-hook #'undo-fu-session-save-safe t)
+  (remove-hook 'write-file-functions #'undo-fu-session-save-safe t)
   (remove-hook 'find-file-hook #'undo-fu-session-recover-safe t))
 
 (defun undo-fu-session-mode-turn-on ()
