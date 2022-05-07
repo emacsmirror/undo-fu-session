@@ -26,7 +26,7 @@ Motivation
 To have a stand-alone package that stores Emacs built-in undo information for re-use,
 without imposing any changes to undo functionality.
 
-While this package is intended for use with `undo-fu <https://gitlab.com/ideasman42/emacs-undo-fu>`__,
+While this package is intended for use with `undo-fu <https://codeberg.org/ideasman42/emacs-undo-fu>`__,
 there are no inter-dependencies.
 
 
@@ -124,7 +124,7 @@ Other Packages
 
 As there are multiple packages which deal with undo, it's worth mentioning how this interacts with other packages.
 
-`Undo Fu <https://gitlab.com/ideasman42/emacs-undo-fu>`__
+`Undo Fu <https://codeberg.org/ideasman42/emacs-undo-fu>`__
    This package is intended for use with undo-fu-session,
    as a convenience wrapper over Emacs built-in undo.
 
