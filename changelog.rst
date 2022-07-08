@@ -3,7 +3,7 @@
 Change Log
 ##########
 
-- In development
+- Version 0.3 (2022-07-08)
 
   - Support conversion of existing undo data to other formats via ``undo-fu-session-compression-update``.
   - Support different compression formats (``bzip2``, ``gzip``, ``xz`` & ``zstd``)

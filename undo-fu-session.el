@@ -8,7 +8,7 @@
 
 ;; URL: https://codeberg.com/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
-;; Version: 0.2
+;; Version: 0.3
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
