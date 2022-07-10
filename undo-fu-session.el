@@ -315,18 +315,17 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (undo-fu-session--list-from-index-map buffer-list 0 1 step-from-index-hash)
       (undo-fu-session--list-from-index-map pending-list -1 -1 step-from-index-hash)
 
-      (dolist (item equiv-table-alist)
-        (pcase-let ((`(,key-num . ,val-num) item))
-          (let
-            (
-              (key (gethash key-num step-from-index-hash))
-              (val
-                (cond
-                  ((eq t val-num)
-                    t)
-                  (t
-                    (gethash val-num step-from-index-hash)))))
-            (puthash key val equiv-table-hash)))))
+      (pcase-dolist (`(,key-num . ,val-num) equiv-table-alist)
+        (let
+          (
+            (key (gethash key-num step-from-index-hash))
+            (val
+              (cond
+                ((eq t val-num)
+                  t)
+                (t
+                  (gethash val-num step-from-index-hash)))))
+          (puthash key val equiv-table-hash))))
     equiv-table-hash))
 
 ;; ---------------------------------------------------------------------------
