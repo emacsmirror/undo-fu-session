@@ -458,6 +458,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
         (throw 'found t)))))
 
 (defun undo-fu-session--directory-ensure ()
+  "Ensure the undo directory has been created."
   (unless (file-directory-p undo-fu-session-directory)
     (make-directory undo-fu-session-directory t)
     ;; These files should only readable by the owner, see #2.
@@ -707,7 +708,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     mode-in-any-buffer))
 
 (defun undo-fu-session--mode-enable ()
-  "Turn on 'undo-fu-session-mode' for the current buffer."
+  "Turn on `undo-fu-session-mode' for the current buffer."
   ;; Even though this runs on save, call here since it's better the user catches
   ;; errors when the mode is enabled instead of having the hook fail.
   (undo-fu-session--directory-ensure)
@@ -716,7 +717,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (add-hook 'find-file-hook #'undo-fu-session--recover-safe))
 
 (defun undo-fu-session--mode-disable ()
-  "Turn off 'undo-fu-session-mode' for the current buffer."
+  "Turn off `undo-fu-session-mode' for the current buffer."
   (unless (undo-fu-session--mode-in-any-buffer)
     (remove-hook 'write-file-functions #'undo-fu-session--save-safe)
     (remove-hook 'find-file-hook #'undo-fu-session--recover-safe)))
