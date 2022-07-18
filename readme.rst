@@ -132,3 +132,8 @@ As there are multiple packages which deal with undo, it's worth mentioning how t
    This package also stores undo data between sessions,
    however it doesn't store redo data making undo-only and redo-only
    operations fail to skip branches of undo history.
+
+`Vundo <https://github.com/casouri/vundo>`__
+   This package supports navigating undo as a tree structure,
+   and works with undo/redo history loaded by ``undo-fu-session``
+   although there are no inter-dependencies as both packages operate on Emacs built-in undo.
