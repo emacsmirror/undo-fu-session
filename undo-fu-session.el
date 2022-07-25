@@ -475,7 +475,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (cond
       ((null filename)
         nil)
-      ( ;; Ignore encryped files.
+      ( ;; Ignore encrypted files.
         (and
           undo-fu-session-ignore-encrypted-files
           epa-file-handler
