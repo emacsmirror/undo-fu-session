@@ -57,9 +57,7 @@ you can enable this using a mode hook for e.g.
 .. code-block:: elisp
 
    ;; Only use undo-fu-session for org mode.
-   (add-hook 'org-mode-hook
-     (lambda ()
-       (undo-fu-session-mode))
+   (add-hook 'org-mode-hook #'undo-fu-session-mode)
 
 
 Customization
