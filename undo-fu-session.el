@@ -70,8 +70,7 @@
 After changing, run `undo-fu-session-compression-update'
 to convert existing files to the newly selected format."
   :type
-  '
-  (choice
+  '(choice
     (const :tag "BZip2" bz2)
     (const :tag "GZip" gz)
     (const :tag "XZ" xz)
@@ -100,9 +99,8 @@ Enforcing removes the oldest files."
 
 (defmacro undo-fu-session--message-without-echo (str &rest args)
   "Wrap `message' passing in STR and ARGS, without showing in the echo area."
-  `
-  (let ((inhibit-message t))
-    (message ,str ,@args)))
+  `(let ((inhibit-message t))
+     (message ,str ,@args)))
 
 ;; ---------------------------------------------------------------------------
 ;; Undo List Make Linear
@@ -119,11 +117,11 @@ ignoring all branches that aren't included in the current undo state."
     ;; (saves pushing to the front of the list then reversing).
     (let ((tail-cdr linear-list))
       (while
-        ;; Collapse all redo branches (giving the same results as if running `undo-only')
-        (let ((undo-list-next nil))
-          (while (setq undo-list-next (gethash undo-list equiv-table))
-            (setq undo-list undo-list-next))
-          (and undo-list (not (eq t undo-list))))
+          ;; Collapse all redo branches (giving the same results as if running `undo-only')
+          (let ((undo-list-next nil))
+            (while (setq undo-list-next (gethash undo-list equiv-table))
+              (setq undo-list undo-list-next))
+            (and undo-list (not (eq t undo-list))))
 
         ;; Pop all steps until the next boundary 'nil'.
         (let ((undo-elt t))
@@ -139,10 +137,10 @@ ignoring all branches that aren't included in the current undo state."
     ;; Note that we use 'nil' as this is what `buffer-undo-list' is set
     ;; to when there are no undo steps yet.
     (cond
-      ((and linear-list (not (equal (list nil) linear-list)))
-        linear-list)
-      (t
-        nil))))
+     ((and linear-list (not (equal (list nil) linear-list)))
+      linear-list)
+     (t
+      nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Undo Encode/Decode Functionality
@@ -150,97 +148,91 @@ ignoring all branches that aren't included in the current undo state."
 (defun undo-fu-session--walk-tree (fn tree)
   "Operate recursively on undo-list, calling FN TREE."
   (cond
-    ((consp tree)
-      (let ((value (funcall fn tree)))
-        (cond
-          ((eq value tree)
-            (let*
-              (
-                (cons (cons (undo-fu-session--walk-tree fn (car tree)) nil))
-                (cur cons))
-              (while tree
-                (let ((cdr (cdr tree)))
-                  (cond
-                    ((consp cdr)
-                      (let ((next (cons (undo-fu-session--walk-tree fn (car cdr)) nil)))
-                        (setcdr cur next)
-                        (setq cur next)
-                        (setq tree cdr)))
-                    (t
-                      (setcdr cur (undo-fu-session--walk-tree fn cdr))
-                      (setq tree nil)))))
-              cons))
-          (t
-            value))))
-    ((vectorp tree)
-      (let ((value (funcall fn tree)))
-        (cond
-          ((eq value tree)
-            (let*
-              (
-                (length (length tree))
-                (vector (make-vector length nil)))
-              (dotimes (i (1- length))
-                (aset vector i (undo-fu-session--walk-tree fn (aref tree i))))
-              vector))
-          (t
-            value))))
-    (tree
-      (funcall fn tree))))
+   ((consp tree)
+    (let ((value (funcall fn tree)))
+      (cond
+       ((eq value tree)
+        (let* ((cons (cons (undo-fu-session--walk-tree fn (car tree)) nil))
+               (cur cons))
+          (while tree
+            (let ((cdr (cdr tree)))
+              (cond
+               ((consp cdr)
+                (let ((next (cons (undo-fu-session--walk-tree fn (car cdr)) nil)))
+                  (setcdr cur next)
+                  (setq cur next)
+                  (setq tree cdr)))
+               (t
+                (setcdr cur (undo-fu-session--walk-tree fn cdr))
+                (setq tree nil)))))
+          cons))
+       (t
+        value))))
+   ((vectorp tree)
+    (let ((value (funcall fn tree)))
+      (cond
+       ((eq value tree)
+        (let* ((length (length tree))
+               (vector (make-vector length nil)))
+          (dotimes (i (1- length))
+            (aset vector i (undo-fu-session--walk-tree fn (aref tree i))))
+          vector))
+       (t
+        value))))
+   (tree
+    (funcall fn tree))))
 
 (defun undo-fu-session--encode (tree)
   "Encode `TREE' so that it can be stored as a file."
   (undo-fu-session--walk-tree
-    (lambda (a)
-      (cond
-        ((markerp a)
-          (cons
-            (cond
-              ((marker-insertion-type a)
-                'marker*)
-              (t
-                'marker))
-            (marker-position a)))
-        ((overlayp a)
-          (list 'overlay (overlay-start a) (overlay-end a)))
-        ((stringp a)
-          (substring-no-properties a))
-        (t
-          a)))
-    tree))
+   (lambda (a)
+     (cond
+      ((markerp a)
+       (cons
+        (cond
+         ((marker-insertion-type a)
+          'marker*)
+         (t
+          'marker))
+        (marker-position a)))
+      ((overlayp a)
+       (list 'overlay (overlay-start a) (overlay-end a)))
+      ((stringp a)
+       (substring-no-properties a))
+      (t
+       a)))
+   tree))
 
 (defun undo-fu-session--decode (tree)
   "Decode `TREE' so that it can be recovered as undo data."
   (undo-fu-session--walk-tree
-    (lambda (a)
-      (cond
-        ((consp a)
-          (cond
-            ((eq (car a) 'marker)
-              (set-marker (make-marker) (cdr a)))
-            ((eq (car a) 'marker*)
-              (let ((marker (make-marker)))
-                (set-marker marker (cdr a))
-                (set-marker-insertion-type marker t)
-                marker))
-            ((eq (car a) 'overlay)
-              (let
-                (
-                  (start (cadr a))
-                  (end (caddr a)))
-                (cond
-                  ((and start end)
-                    (make-overlay (cadr a) (caddr a)))
-                  ;; Make deleted overlay
-                  (t
-                    (let ((overlay (make-overlay (point-min) (point-min))))
-                      (delete-overlay overlay)
-                      overlay)))))
+   (lambda (a)
+     (cond
+      ((consp a)
+       (cond
+        ((eq (car a) 'marker)
+         (set-marker (make-marker) (cdr a)))
+        ((eq (car a) 'marker*)
+         (let ((marker (make-marker)))
+           (set-marker marker (cdr a))
+           (set-marker-insertion-type marker t)
+           marker))
+        ((eq (car a) 'overlay)
+         (let ((start (cadr a))
+               (end (caddr a)))
+           (cond
+            ((and start end)
+             (make-overlay (cadr a) (caddr a)))
+            ;; Make deleted overlay
             (t
-              a)))
+             (let ((overlay (make-overlay (point-min) (point-min))))
+               (delete-overlay overlay)
+               overlay)))))
         (t
-          a)))
-    tree))
+         a)))
+      (t
+       a)))
+   tree))
 
 (defun undo-fu-session--next-step (list)
   "Get the next undo step in LIST.
@@ -277,28 +269,26 @@ INDEX-STEP are used as keys mapping to LIST elements."
 Argument BUFFER-LIST typically `undo-buffer-list'.
 Argument PENDING-LIST typically `pending-undo-list'."
   (let
-    ( ;; Map undo-elem -> index.
-      ;; Negative indices for 'pending-list'.
-      (step-to-index-hash (make-hash-table :test 'eq))
-      (equiv-table-alist (list)))
+      ( ;; Map undo-elem -> index.
+       ;; Negative indices for 'pending-list'.
+       (step-to-index-hash (make-hash-table :test 'eq))
+       (equiv-table-alist (list)))
 
     (undo-fu-session--list-to-index-map buffer-list 0 1 step-to-index-hash)
     (undo-fu-session--list-to-index-map pending-list -1 -1 step-to-index-hash)
 
     (maphash
-      (lambda (key val)
-        (let
-          (
-            (key-num (gethash key step-to-index-hash))
-            (val-num
+     (lambda (key val)
+       (let ((key-num (gethash key step-to-index-hash))
+             (val-num
               (cond
-                ((eq t val)
-                  t)
-                (t
-                  (gethash val step-to-index-hash)))))
-          (when (and key-num val-num)
-            (push (cons key-num val-num) equiv-table-alist))))
-      equiv-table)
+               ((eq t val)
+                t)
+               (t
+                (gethash val step-to-index-hash)))))
+         (when (and key-num val-num)
+           (push (cons key-num val-num) equiv-table-alist))))
+     equiv-table)
     equiv-table-alist))
 
 
@@ -307,13 +297,11 @@ Argument PENDING-LIST typically `pending-undo-list'."
 Argument BUFFER-LIST an `undo-buffer-list' compatible list.
 Argument PENDING-LIST an `pending-undo-list' compatible list."
 
-  (let*
-    (
-      (equiv-table-length (length equiv-table-alist))
-      ;; Map index -> undo-elem.
-      ;; Negative indices for 'pending-list'.
-      (step-from-index-hash (make-hash-table :test 'eq))
-      (equiv-table-hash (make-hash-table :test 'eq :weakness t :size equiv-table-length)))
+  (let* ((equiv-table-length (length equiv-table-alist))
+         ;; Map index -> undo-elem.
+         ;; Negative indices for 'pending-list'.
+         (step-from-index-hash (make-hash-table :test 'eq))
+         (equiv-table-hash (make-hash-table :test 'eq :weakness t :size equiv-table-length)))
 
     (unless (zerop equiv-table-length)
 
@@ -321,15 +309,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (undo-fu-session--list-from-index-map pending-list -1 -1 step-from-index-hash)
 
       (pcase-dolist (`(,key-num . ,val-num) equiv-table-alist)
-        (let
-          (
-            (key (gethash key-num step-from-index-hash))
-            (val
-              (cond
+        (let ((key (gethash key-num step-from-index-hash))
+              (val
+               (cond
                 ((eq t val-num)
-                  t)
+                 t)
                 (t
-                  (gethash val-num step-from-index-hash)))))
+                 (gethash val-num step-from-index-hash)))))
           (puthash key val equiv-table-hash))))
     equiv-table-hash))
 
@@ -342,29 +328,26 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   ;; clearing old files should _never_ interfere with other operations,
   ;; so surround with error a check & error message.
   (condition-case err-1
-    (when (file-directory-p undo-fu-session-directory)
-      (dolist
-        (file-with-attrs
-          (nthcdr ;; Skip new files, removing old.
-            undo-fu-session-file-limit
-            (sort ;; Sort new files first.
-              (delq
-                nil ;; Non-file.
-                (mapcar
-                  #'
-                  (lambda (x)
-                    (unless (nth 1 x)
-                      x))
-                  (directory-files-and-attributes undo-fu-session-directory t nil t)))
-              (lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
-        (let ((file (car file-with-attrs)))
-          (condition-case err-2
-            (delete-file file)
-            (error
-              (message
-                "Undo-Fu-Session error deleting '%s' for '%s'"
-                (error-message-string err-2)
-                file))))))
+      (when (file-directory-p undo-fu-session-directory)
+        (dolist (file-with-attrs
+                 (nthcdr ;; Skip new files, removing old.
+                  undo-fu-session-file-limit
+                  (sort ;; Sort new files first.
+                   (delq
+                    nil ;; Non-file.
+                    (mapcar
+                     #'(lambda (x)
+                         (unless (nth 1 x)
+                           x))
+                     (directory-files-and-attributes undo-fu-session-directory t nil t)))
+                   (lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
+          (let ((file (car file-with-attrs)))
+            (condition-case err-2
+                (delete-file file)
+              (error
+               (message "Undo-Fu-Session error deleting '%s' for '%s'"
+                        (error-message-string err-2)
+                        file))))))
     (error (message "Undo-Fu-Session error limiting files '%s'" (error-message-string err-1)))))
 
 
@@ -374,24 +357,23 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (defun undo-fu-session--compression-update-impl ()
   "Use the current compression settings."
   (let
-    ( ;; Quiet compression messages for `with-auto-compression-mode'.
-      (jka-compr-verbose nil)
-      ;; The new extension to use.
-      (ext-dst (undo-fu-session--file-name-ext))
-      ;; The files to operate on
-      (files-to-convert (list))
-      (count-complete 0)
-      (count-pending 0)
-      (size-src 0)
-      (size-dst 0))
+      ( ;; Quiet compression messages for `with-auto-compression-mode'.
+       (jka-compr-verbose nil)
+       ;; The new extension to use.
+       (ext-dst (undo-fu-session--file-name-ext))
+       ;; The files to operate on
+       (files-to-convert (list))
+       (count-complete 0)
+       (count-pending 0)
+       (size-src 0)
+       (size-dst 0))
 
-    (dolist
-      (file-src
-        (cond
-          ((file-directory-p undo-fu-session-directory)
-            (directory-files undo-fu-session-directory))
-          (t
-            (list))))
+    (dolist (file-src
+             (cond
+              ((file-directory-p undo-fu-session-directory)
+               (directory-files undo-fu-session-directory))
+              (t
+               (list))))
       (let ((file-src-full (file-name-concat undo-fu-session-directory file-src)))
         (unless (file-directory-p file-src-full)
           (unless (string-suffix-p ext-dst file-src)
@@ -402,30 +384,28 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (with-auto-compression-mode
       (dolist (file-src-full files-to-convert)
         (let ((file-dst-full (file-name-with-extension file-src-full ext-dst)))
-          (message
-            "File %d of %d: %s"
-            count-complete
-            count-pending
-            (file-name-nondirectory file-dst-full))
+          (message "File %d of %d: %s"
+                   count-complete
+                   count-pending
+                   (file-name-nondirectory file-dst-full))
           (condition-case-unless-debug err
-            (progn
-              (with-temp-buffer
-                (insert-file-contents file-src-full)
-                (write-region nil nil file-dst-full nil 0))
+              (progn
+                (with-temp-buffer
+                  (insert-file-contents file-src-full)
+                  (write-region nil nil file-dst-full nil 0))
 
-              (setq size-src (+ size-src (file-attribute-size (file-attributes file-src-full))))
-              (setq size-dst (+ size-dst (file-attribute-size (file-attributes file-dst-full))))
+                (setq size-src (+ size-src (file-attribute-size (file-attributes file-src-full))))
+                (setq size-dst (+ size-dst (file-attribute-size (file-attributes file-dst-full))))
 
-              (delete-file file-src-full)
-              (setq count-complete (1+ count-complete)))
+                (delete-file file-src-full)
+                (setq count-complete (1+ count-complete)))
 
             (error (message "Error: %s" (error-message-string err)))))))
 
-    (message
-      "Completed %d file(s) (size was %s, now %s)"
-      count-complete
-      (file-size-human-readable size-src)
-      (file-size-human-readable size-dst))))
+    (message "Completed %d file(s) (size was %s, now %s)"
+             count-complete
+             (file-size-human-readable size-src)
+             (file-size-human-readable size-dst))))
 
 
 ;; ---------------------------------------------------------------------------
@@ -434,32 +414,32 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (defun undo-fu-session--file-name-ext ()
   "Return the current file name extension in use."
   (cond
-    ((symbolp undo-fu-session-compression)
-      (concat "." (symbol-name undo-fu-session-compression)))
-    ((eq undo-fu-session-compression t)
-      ;; Used for older versions where compression was a boolean.
-      ".gz")
-    (t
-      ".el")))
+   ((symbolp undo-fu-session-compression)
+    (concat "." (symbol-name undo-fu-session-compression)))
+   ((eq undo-fu-session-compression t)
+    ;; Used for older versions where compression was a boolean.
+    ".gz")
+   (t
+    ".el")))
 
 (defun undo-fu-session--make-file-name (filename)
   "Take the path FILENAME and return a name base on this."
   (concat
-    (file-name-concat
-      undo-fu-session-directory
-      (url-hexify-string (convert-standard-filename (expand-file-name filename))))
-    (undo-fu-session--file-name-ext)))
+   (file-name-concat undo-fu-session-directory
+                     (url-hexify-string
+                      (convert-standard-filename
+                       (expand-file-name filename))))
+   (undo-fu-session--file-name-ext)))
 
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
   (catch 'found
     (dolist (matcher test-files)
-      (when
-        (cond
-          ((stringp matcher)
-            (string-match-p matcher filename))
-          (t
-            (funcall matcher filename)))
+      (when (cond
+             ((stringp matcher)
+              (string-match-p matcher filename))
+             (t
+              (funcall matcher filename)))
         (throw 'found t)))))
 
 (defun undo-fu-session--directory-ensure ()
@@ -472,26 +452,23 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--recover-buffer-p (buffer)
   "Return t if undo data of BUFFER should be recovered."
-  (let
-    (
-      (filename (buffer-file-name buffer))
-      (test-files undo-fu-session-incompatible-files)
-      (test-modes undo-fu-session-incompatible-major-modes))
+  (let ((filename (buffer-file-name buffer))
+        (test-files undo-fu-session-incompatible-files)
+        (test-modes undo-fu-session-incompatible-major-modes))
     (cond
-      ((null filename)
-        nil)
-      ( ;; Ignore encrypted files.
-        (and
-          undo-fu-session-ignore-encrypted-files
-          epa-file-handler
-          (string-match-p (car epa-file-handler) filename))
-        nil)
-      ((and test-files (undo-fu-session--match-file-name filename test-files))
-        nil)
-      ((and test-modes (memq (buffer-local-value 'major-mode buffer) test-modes))
-        nil)
-      (t
-        t))))
+     ((null filename)
+      nil)
+     ( ;; Ignore encrypted files.
+      (and undo-fu-session-ignore-encrypted-files
+           epa-file-handler
+           (string-match-p (car epa-file-handler) filename))
+      nil)
+     ((and test-files (undo-fu-session--match-file-name filename test-files))
+      nil)
+     ((and test-modes (memq (buffer-local-value 'major-mode buffer) test-modes))
+      nil)
+     (t
+      t))))
 
 (defun undo-fu-session--save-impl ()
   "Internal save logic, resulting in t on success."
@@ -499,19 +476,17 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   ;; Paranoid as it's possible the directory was removed since the mode was enabled.
   (undo-fu-session--directory-ensure)
 
-  (let
-    (
-      (buffer (current-buffer))
-      (filename (buffer-file-name))
-      (undo-file nil)
-      (content-header nil)
-      (content-data nil)
+  (let ((buffer (current-buffer))
+        (filename (buffer-file-name))
+        (undo-file nil)
+        (content-header nil)
+        (content-data nil)
 
-      ;; Ensure we can include undo information for the buffer being operated on, see #3.
-      (coding-system-for-write buffer-file-coding-system)
+        ;; Ensure we can include undo information for the buffer being operated on, see #3.
+        (coding-system-for-write buffer-file-coding-system)
 
-      ;; Quiet compression messages for `with-auto-compression-mode'.
-      (jka-compr-verbose nil))
+        ;; Quiet compression messages for `with-auto-compression-mode'.
+        (jka-compr-verbose nil))
 
     (catch 'exit
       ;; No need for a message, exit silently since there is nothing to do.
@@ -522,35 +497,35 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
         (throw 'exit nil))
 
       (let
-        ( ;; Variables to build the `content-data'.
-          (emacs-buffer-undo-list nil)
-          (emacs-pending-undo-list nil)
-          (emacs-undo-equiv-table nil))
+          ( ;; Variables to build the `content-data'.
+           (emacs-buffer-undo-list nil)
+           (emacs-pending-undo-list nil)
+           (emacs-undo-equiv-table nil))
 
         (cond
-          ;; Simplified linear history (no redo or implicit tree-structure).
-          ;; Only store steps reachable by calling `undo-only'.
-          (undo-fu-session-linear
-            (setq emacs-buffer-undo-list
-              (undo-fu-session--encode
-                (undo-fu-session--linear-undo-list buffer-undo-list undo-equiv-table))))
-          ;; Full non-linear history (full undo/redo).
-          (t
-            (setq emacs-buffer-undo-list (undo-fu-session--encode buffer-undo-list))
-            (setq emacs-pending-undo-list (undo-fu-session--encode pending-undo-list))
-            (setq emacs-undo-equiv-table
-              (undo-fu-session--equivtable-encode
-                undo-equiv-table
-                buffer-undo-list
-                pending-undo-list))))
+         ;; Simplified linear history (no redo or implicit tree-structure).
+         ;; Only store steps reachable by calling `undo-only'.
+         (undo-fu-session-linear
+          (setq emacs-buffer-undo-list
+                (undo-fu-session--encode
+                 (undo-fu-session--linear-undo-list buffer-undo-list undo-equiv-table))))
+         ;; Full non-linear history (full undo/redo).
+         (t
+          (setq emacs-buffer-undo-list (undo-fu-session--encode buffer-undo-list))
+          (setq emacs-pending-undo-list (undo-fu-session--encode pending-undo-list))
+          (setq emacs-undo-equiv-table
+                (undo-fu-session--equivtable-encode
+                 undo-equiv-table
+                 buffer-undo-list
+                 pending-undo-list))))
 
         (setq content-header
-          (list (cons 'buffer-size (buffer-size)) (cons 'buffer-checksum (sha1 buffer))))
+              (list (cons 'buffer-size (buffer-size)) (cons 'buffer-checksum (sha1 buffer))))
         (setq content-data
-          (list
-            (cons 'emacs-buffer-undo-list emacs-buffer-undo-list)
-            (cons 'emacs-pending-undo-list emacs-pending-undo-list)
-            (cons 'emacs-undo-equiv-table emacs-undo-equiv-table)))))
+              (list
+               (cons 'emacs-buffer-undo-list emacs-buffer-undo-list)
+               (cons 'emacs-pending-undo-list emacs-pending-undo-list)
+               (cons 'emacs-undo-equiv-table emacs-undo-equiv-table)))))
 
     (when content-data
       (setq undo-file (undo-fu-session--make-file-name filename))
@@ -573,26 +548,24 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   "Public save function, typically called by `write-file-functions'."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
-      (undo-fu-session--save-impl)
+        (undo-fu-session--save-impl)
       (error (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err)))))
   ;; Important to return NIL, to show the file wasn't saved.
   nil)
 
 (defun undo-fu-session--recover-impl ()
   "Internal restore logic, resulting in t on success."
-  (let
-    (
-      (buffer (current-buffer))
-      (filename (buffer-file-name))
-      (undo-file nil)
-      (content-header nil)
-      (content-data nil)
+  (let ((buffer (current-buffer))
+        (filename (buffer-file-name))
+        (undo-file nil)
+        (content-header nil)
+        (content-data nil)
 
-      ;; Ensure we can include undo information for the buffer being operated on, see #3.
-      (coding-system-for-read buffer-file-coding-system)
+        ;; Ensure we can include undo information for the buffer being operated on, see #3.
+        (coding-system-for-read buffer-file-coding-system)
 
-      ;; Quiet compression messages for `with-auto-compression-mode'.
-      (jka-compr-verbose nil))
+        ;; Quiet compression messages for `with-auto-compression-mode'.
+        (jka-compr-verbose nil))
 
     (catch 'exit
       ;; No need for a message, exit silently since there is nothing to do.
@@ -618,14 +591,14 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           ;; without distracting them with noisy info.
           (unless (= (buffer-size buffer) (cdr (assoc 'buffer-size content-header)))
             (undo-fu-session--message-without-echo
-              "Undo-Fu-Session discarding: file length mismatch for %S"
-              filename)
+             "Undo-Fu-Session discarding: file length mismatch for %S"
+             filename)
             (throw 'exit nil))
 
           (unless (string-equal (sha1 buffer) (cdr (assoc 'buffer-checksum content-header)))
             (undo-fu-session--message-without-echo
-              "Undo-Fu-Session discarding: file checksum mismatch for %S"
-              filename)
+             "Undo-Fu-Session discarding: file checksum mismatch for %S"
+             filename)
             (throw 'exit nil))
 
           ;; No errors... decode all undo data.
@@ -633,18 +606,22 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
     (when content-data
       (let*
-        ( ;; `emacs-buffer-undo-list' may not exist, nil is OK.
-          (emacs-buffer-undo-list
-            (undo-fu-session--decode (cdr (assoc 'emacs-buffer-undo-list content-data))))
-          ;; `emacs-pending-undo-list' may not exist, nil is OK.
-          (emacs-pending-undo-list
-            (undo-fu-session--decode (cdr (assoc 'emacs-pending-undo-list content-data))))
-          ;; `emacs-undo-equiv-table' may not exist, nil is OK as it's treated as an empty list.
-          (emacs-undo-equiv-table
+          ( ;; `emacs-buffer-undo-list' may not exist, nil is OK.
+           (emacs-buffer-undo-list
+            (undo-fu-session--decode
+             (cdr
+              (assoc 'emacs-buffer-undo-list content-data))))
+           ;; `emacs-pending-undo-list' may not exist, nil is OK.
+           (emacs-pending-undo-list
+            (undo-fu-session--decode
+             (cdr
+              (assoc 'emacs-pending-undo-list content-data))))
+           ;; `emacs-undo-equiv-table' may not exist, nil is OK as it's treated as an empty list.
+           (emacs-undo-equiv-table
             (undo-fu-session--equivtable-decode
-              (cdr (assoc 'emacs-undo-equiv-table content-data))
-              emacs-buffer-undo-list
-              emacs-pending-undo-list)))
+             (cdr (assoc 'emacs-undo-equiv-table content-data))
+             emacs-buffer-undo-list
+             emacs-pending-undo-list)))
 
         ;; It's possible the history was saved with undo disabled.
         ;; In this case simply reset the values so loading history never disables undo.
@@ -666,9 +643,9 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   "Public restore function, typically called by `find-file-hook'."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
-      (undo-fu-session--recover-impl)
+        (undo-fu-session--recover-impl)
       (error
-        (message "Undo-Fu-Session can not recover undo data: %s" (error-message-string err))))))
+       (message "Undo-Fu-Session can not recover undo data: %s" (error-message-string err))))))
 
 
 ;; ---------------------------------------------------------------------------
@@ -701,10 +678,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--mode-in-any-buffer ()
   "Return non-nil if the `undo-fu-session-mode' is enabled in any buffer."
-  (let
-    (
-      (mode-in-any-buffer nil)
-      (buffers (buffer-list)))
+  (let ((mode-in-any-buffer nil)
+        (buffers (buffer-list)))
     (while buffers
       (let ((buf (pop buffers)))
         (when (buffer-local-value 'undo-fu-session-mode buf)
@@ -729,15 +704,14 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--mode-turn-on ()
   "Enable command `undo-fu-session-mode'."
-  (when
-    (and
-      ;; Not already enabled.
-      (not (bound-and-true-p undo-fu-session-mode))
-      ;; Not in the mini-buffer.
-      (not (minibufferp))
-      ;; Not a special mode (package list, tabulated data ... etc)
-      ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
-      (not (derived-mode-p 'special-mode)))
+  (when (and
+         ;; Not already enabled.
+         (not (bound-and-true-p undo-fu-session-mode))
+         ;; Not in the mini-buffer.
+         (not (minibufferp))
+         ;; Not a special mode (package list, tabulated data ... etc)
+         ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
+         (not (derived-mode-p 'special-mode)))
     (undo-fu-session-mode 1)))
 
 ;;;###autoload
@@ -746,14 +720,13 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   :global nil
 
   (cond
-    (undo-fu-session-mode
-      (undo-fu-session--mode-enable))
-    (t
-      (undo-fu-session--mode-disable))))
+   (undo-fu-session-mode
+    (undo-fu-session--mode-enable))
+   (t
+    (undo-fu-session--mode-disable))))
 
 ;;;###autoload
-(define-globalized-minor-mode
-  global-undo-fu-session-mode
+(define-globalized-minor-mode global-undo-fu-session-mode
   undo-fu-session-mode
   undo-fu-session--mode-turn-on)
 
