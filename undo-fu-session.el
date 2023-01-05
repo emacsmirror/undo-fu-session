@@ -336,9 +336,9 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                    (delq
                     nil ;; Non-file.
                     (mapcar
-                     #'(lambda (x)
-                         (unless (nth 1 x)
-                           x))
+                     (lambda (x)
+                       (unless (nth 1 x)
+                         x))
                      (directory-files-and-attributes undo-fu-session-directory t nil t)))
                    (lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
           (let ((file (car file-with-attrs)))
