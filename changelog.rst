@@ -3,6 +3,11 @@
 Change Log
 ##########
 
+
+- Version 0.4 (2023-01-07)
+
+  - Rename ``global-undo-fu-session-mode`` to ``undo-fu-session-global-mode``.
+
 - Version 0.3 (2022-07-08)
 
   - Support conversion of existing undo data to other formats via ``undo-fu-session-compression-update``.

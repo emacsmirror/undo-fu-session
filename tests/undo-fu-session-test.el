@@ -105,7 +105,7 @@
 (defun undo-fu-session-test-run-all ()
   "Run every test."
 
-  (global-undo-fu-session-mode)
+  (undo-fu-session-global-mode)
 
   (message "Running with `undo-fu-session-linear' enabled:")
   (setq undo-fu-session-linear t)

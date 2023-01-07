@@ -45,7 +45,7 @@ disable storing undo information by mode and file-name.
 
 .. code-block:: elisp
 
-   (global-undo-fu-session-mode)
+   (undo-fu-session-global-mode)
 
 
 Enable (Buffer)
@@ -106,7 +106,7 @@ The package is available in melpa as ``undo-fu-session``, here is an example wit
      :config
      (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
 
-   (global-undo-fu-session-mode)
+   (undo-fu-session-global-mode)
 
 
 Undo Tree

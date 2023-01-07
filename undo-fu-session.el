@@ -8,7 +8,7 @@
 
 ;; URL: https://codeberg.com/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
-;; Version: 0.3
+;; Version: 0.4
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
@@ -23,15 +23,15 @@
 ;; Write the following code to your .emacs file:
 ;;
 ;;   (require 'undo-fu-session)
-;;   (global-undo-fu-session-mode)
+;;   (undo-fu-session-global-mode)
 ;;
 ;; Or with `use-package':
 ;;
 ;;   (use-package undo-fu-session)
-;;   (global-undo-fu-session-mode)
+;;   (undo-fu-session-global-mode)
 ;;
 ;; If you prefer to enable this per-mode, you may do so using
-;; mode hooks instead of calling `global-undo-fu-session-mode'.
+;; mode hooks instead of calling `undo-fu-session-global-mode'.
 ;; The following example enables this for org-mode:
 ;;
 ;;   (add-hook 'org-mode-hook (lambda () (undo-fu-session-mode))
@@ -726,9 +726,11 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (undo-fu-session--mode-disable))))
 
 ;;;###autoload
-(define-globalized-minor-mode global-undo-fu-session-mode
+(define-globalized-minor-mode undo-fu-session-global-mode
   undo-fu-session-mode
   undo-fu-session--mode-turn-on)
+
+(define-obsolete-function-alias 'global-undo-fu-session-mode #'undo-fu-session-global-mode "0.4")
 
 (provide 'undo-fu-session)
 ;;; undo-fu-session.el ends here
