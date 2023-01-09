@@ -115,4 +115,8 @@
   (undo-fu-session-test-run-all-impl))
 
 (provide 'undo-fu-session-test)
+;; Local Variables:
+;; fill-column: 99
+;; indent-tabs-mode: nil
+;; End:
 ;;; undo-fu-session-test.el ends here

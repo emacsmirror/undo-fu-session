@@ -725,4 +725,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (define-obsolete-function-alias 'global-undo-fu-session-mode #'undo-fu-session-global-mode "0.4")
 
 (provide 'undo-fu-session)
+;; Local Variables:
+;; fill-column: 99
+;; indent-tabs-mode: nil
+;; End:
 ;;; undo-fu-session.el ends here
