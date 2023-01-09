@@ -426,9 +426,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   "Take the path FILENAME and return a name base on this."
   (concat
    (file-name-concat undo-fu-session-directory
-                     (url-hexify-string
-                      (convert-standard-filename
-                       (expand-file-name filename))))
+                     (url-hexify-string (convert-standard-filename (expand-file-name filename))))
    (undo-fu-session--file-name-ext)))
 
 (defun undo-fu-session--match-file-name (filename test-files)
@@ -608,14 +606,10 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (let*
           ( ;; `emacs-buffer-undo-list' may not exist, nil is OK.
            (emacs-buffer-undo-list
-            (undo-fu-session--decode
-             (cdr
-              (assoc 'emacs-buffer-undo-list content-data))))
+            (undo-fu-session--decode (cdr (assoc 'emacs-buffer-undo-list content-data))))
            ;; `emacs-pending-undo-list' may not exist, nil is OK.
            (emacs-pending-undo-list
-            (undo-fu-session--decode
-             (cdr
-              (assoc 'emacs-pending-undo-list content-data))))
+            (undo-fu-session--decode (cdr (assoc 'emacs-pending-undo-list content-data))))
            ;; `emacs-undo-equiv-table' may not exist, nil is OK as it's treated as an empty list.
            (emacs-undo-equiv-table
             (undo-fu-session--equivtable-decode
