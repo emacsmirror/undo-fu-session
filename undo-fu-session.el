@@ -268,11 +268,11 @@ INDEX-STEP are used as keys mapping to LIST elements."
   "Convert the EQUIV-TABLE into an alist of buffer list indices.
 Argument BUFFER-LIST typically `undo-buffer-list'.
 Argument PENDING-LIST typically `pending-undo-list'."
-  (let
-      ( ;; Map undo-elem -> index.
-       ;; Negative indices for 'pending-list'.
-       (step-to-index-hash (make-hash-table :test 'eq))
-       (equiv-table-alist (list)))
+
+  ;; Map undo-elem -> index.
+  ;; Negative indices for 'pending-list'.
+  (let ((step-to-index-hash (make-hash-table :test 'eq))
+        (equiv-table-alist (list)))
 
     (undo-fu-session--list-to-index-map buffer-list 0 1 step-to-index-hash)
     (undo-fu-session--list-to-index-map pending-list -1 -1 step-to-index-hash)
@@ -330,11 +330,11 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (condition-case err-1
       (when (file-directory-p undo-fu-session-directory)
         (dolist (file-with-attrs
-                 (nthcdr ;; Skip new files, removing old.
+                 (nthcdr ; Skip new files, removing old.
                   undo-fu-session-file-limit
-                  (sort ;; Sort new files first.
+                  (sort ; Sort new files first.
                    (delq
-                    nil ;; Non-file.
+                    nil ; Non-file.
                     (mapcar
                      (lambda (x)
                        (unless (nth 1 x)
@@ -356,17 +356,17 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--compression-update-impl ()
   "Use the current compression settings."
-  (let
-      ( ;; Quiet compression messages for `with-auto-compression-mode'.
-       (jka-compr-verbose nil)
-       ;; The new extension to use.
-       (ext-dst (undo-fu-session--file-name-ext))
-       ;; The files to operate on
-       (files-to-convert (list))
-       (count-complete 0)
-       (count-pending 0)
-       (size-src 0)
-       (size-dst 0))
+  (let ((count-complete 0)
+        (count-pending 0)
+        (size-src 0)
+        (size-dst 0)
+
+        ;; Quiet compression messages for `with-auto-compression-mode'.
+        (jka-compr-verbose nil)
+        ;; The new extension to use.
+        (ext-dst (undo-fu-session--file-name-ext))
+        ;; The files to operate on
+        (files-to-convert (list)))
 
     (dolist (file-src
              (cond
@@ -456,8 +456,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (cond
      ((null filename)
       nil)
-     ( ;; Ignore encrypted files.
-      (and undo-fu-session-ignore-encrypted-files
+     ((and undo-fu-session-ignore-encrypted-files
            epa-file-handler
            (string-match-p (car epa-file-handler) filename))
       nil)
@@ -494,11 +493,10 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (unless (or (consp buffer-undo-list) (consp pending-undo-list))
         (throw 'exit nil))
 
-      (let
-          ( ;; Variables to build the `content-data'.
-           (emacs-buffer-undo-list nil)
-           (emacs-pending-undo-list nil)
-           (emacs-undo-equiv-table nil))
+      ;; Variables to build the `content-data'.
+      (let ((emacs-buffer-undo-list nil)
+            (emacs-pending-undo-list nil)
+            (emacs-undo-equiv-table nil))
 
         (cond
          ;; Simplified linear history (no redo or implicit tree-structure).
@@ -603,19 +601,19 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (setq content-data (read (current-buffer))))))
 
     (when content-data
-      (let*
-          ( ;; `emacs-buffer-undo-list' may not exist, nil is OK.
-           (emacs-buffer-undo-list
-            (undo-fu-session--decode (cdr (assoc 'emacs-buffer-undo-list content-data))))
-           ;; `emacs-pending-undo-list' may not exist, nil is OK.
-           (emacs-pending-undo-list
-            (undo-fu-session--decode (cdr (assoc 'emacs-pending-undo-list content-data))))
-           ;; `emacs-undo-equiv-table' may not exist, nil is OK as it's treated as an empty list.
-           (emacs-undo-equiv-table
-            (undo-fu-session--equivtable-decode
-             (cdr (assoc 'emacs-undo-equiv-table content-data))
-             emacs-buffer-undo-list
-             emacs-pending-undo-list)))
+      (let* ((emacs-buffer-undo-list
+              ;; `emacs-buffer-undo-list' may not exist, nil is OK.
+              (undo-fu-session--decode (cdr (assoc 'emacs-buffer-undo-list content-data))))
+             (emacs-pending-undo-list
+              ;; `emacs-pending-undo-list' may not exist, nil is OK.
+              (undo-fu-session--decode (cdr (assoc 'emacs-pending-undo-list content-data))))
+             (emacs-undo-equiv-table
+              ;; `emacs-undo-equiv-table' may not exist, nil is OK
+              ;; as it's treated as an empty list.
+              (undo-fu-session--equivtable-decode
+               (cdr
+                (assoc 'emacs-undo-equiv-table content-data))
+               emacs-buffer-undo-list emacs-pending-undo-list)))
 
         ;; It's possible the history was saved with undo disabled.
         ;; In this case simply reset the values so loading history never disables undo.

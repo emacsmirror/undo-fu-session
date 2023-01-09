@@ -56,11 +56,10 @@
    undo-fu-session-directory
 
    (dotimes (f 100)
-     (let*
-         ( ;; While the session file wouldn't typically
-          ;; be in the same directory as the undo session data, it's harmless.
-          (filename (concat undo-fu-session-directory "/undo-fu-session-test"))
-          (filename-session (undo-fu-session--make-file-name filename)))
+     ;; While the session file wouldn't typically
+     ;; be in the same directory as the undo session data, it's harmless.
+     (let* ((filename (concat undo-fu-session-directory "/undo-fu-session-test"))
+            (filename-session (undo-fu-session--make-file-name filename)))
        (when (file-exists-p filename)
          (delete-file filename))
        (when (file-exists-p filename-session)
