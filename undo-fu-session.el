@@ -511,9 +511,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (setq emacs-pending-undo-list (undo-fu-session--encode pending-undo-list))
           (setq emacs-undo-equiv-table
                 (undo-fu-session--equivtable-encode
-                 undo-equiv-table
-                 buffer-undo-list
-                 pending-undo-list))))
+                 undo-equiv-table buffer-undo-list pending-undo-list))))
 
         (setq content-header
               (list (cons 'buffer-size (buffer-size)) (cons 'buffer-checksum (sha1 buffer))))
