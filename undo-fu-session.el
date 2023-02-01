@@ -70,13 +70,12 @@
 After changing, run `undo-fu-session-compression-update'
 to convert existing files to the newly selected format."
   :type
-  '(choice
-    (const :tag "BZip2" bz2)
-    (const :tag "GZip" gz)
-    (const :tag "XZ" xz)
-    (const :tag "Z-Standard" zst)
+  '(choice (const :tag "BZip2" bz2)
+           (const :tag "GZip" gz)
+           (const :tag "XZ" xz)
+           (const :tag "Z-Standard" zst)
 
-    (const :tag "No Compression" nil)))
+           (const :tag "No Compression" nil)))
 
 (defcustom undo-fu-session-incompatible-files '()
   "List of REGEXP or FUNCTION for matching files to ignore for undo session."
@@ -726,5 +725,6 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 ;; Local Variables:
 ;; fill-column: 99
 ;; indent-tabs-mode: nil
+;; elisp-autofmt-format-quoted: nil
 ;; End:
 ;;; undo-fu-session.el ends here
