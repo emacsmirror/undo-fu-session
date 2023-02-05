@@ -115,12 +115,11 @@ ignoring all branches that aren't included in the current undo state."
     ;; Store the last `cons' cell to build a list in-order
     ;; (saves pushing to the front of the list then reversing).
     (let ((tail-cdr linear-list))
-      (while
-          ;; Collapse all redo branches (giving the same results as if running `undo-only')
-          (let ((undo-list-next nil))
-            (while (setq undo-list-next (gethash undo-list equiv-table))
-              (setq undo-list undo-list-next))
-            (and undo-list (not (eq t undo-list))))
+      (while (let ((undo-list-next nil))
+               ;; Collapse all redo branches (giving the same results as if running `undo-only')
+               (while (setq undo-list-next (gethash undo-list equiv-table))
+                 (setq undo-list undo-list-next))
+               (and undo-list (not (eq t undo-list))))
 
         ;; Pop all steps until the next boundary 'nil'.
         (let ((undo-elt t))
