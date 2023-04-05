@@ -3,6 +3,10 @@
 Change Log
 ##########
 
+- Version 0.5 (2023-04-05)
+
+  - Fix bug when ``undo-fu-session-linear`` was disabled,
+    saving when all undo steps were undone would cause an error & fail to save undo data.
 
 - Version 0.4 (2023-01-07)
 

@@ -8,7 +8,7 @@
 
 ;; URL: https://codeberg.com/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
-;; Version: 0.4
+;; Version: 0.5
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
@@ -182,55 +182,65 @@ ignoring all branches that aren't included in the current undo state."
 
 (defun undo-fu-session--encode (tree)
   "Encode `TREE' so that it can be stored as a file."
-  (undo-fu-session--walk-tree
-   (lambda (a)
-     (cond
-      ((markerp a)
-       (cons
-        (cond
-         ((marker-insertion-type a)
-          'marker*)
-         (t
-          'marker))
-        (marker-position a)))
-      ((overlayp a)
-       (list 'overlay (overlay-start a) (overlay-end a)))
-      ((stringp a)
-       (substring-no-properties a))
-      (t
-       a)))
-   tree))
+  (cond
+   ((eq t tree)
+    ;; Special exception for a single t value (happens with `pending-undo-list').
+    t)
+   (t
+    (undo-fu-session--walk-tree
+     (lambda (a)
+       (cond
+        ((markerp a)
+         (cons
+          (cond
+           ((marker-insertion-type a)
+            'marker*)
+           (t
+            'marker))
+          (marker-position a)))
+        ((overlayp a)
+         (list 'overlay (overlay-start a) (overlay-end a)))
+        ((stringp a)
+         (substring-no-properties a))
+        (t
+         a)))
+     tree))))
 
 (defun undo-fu-session--decode (tree)
   "Decode `TREE' so that it can be recovered as undo data."
-  (undo-fu-session--walk-tree
-   (lambda (a)
-     (cond
-      ((consp a)
+  (cond
+   ((eq t tree)
+    ;; Special exception for a single t value (happens with `pending-undo-list').
+    t)
+   (t
+    (undo-fu-session--walk-tree
+     (lambda (a)
        (cond
-        ((eq (car a) 'marker)
-         (set-marker (make-marker) (cdr a)))
-        ((eq (car a) 'marker*)
-         (let ((marker (make-marker)))
-           (set-marker marker (cdr a))
-           (set-marker-insertion-type marker t)
-           marker))
-        ((eq (car a) 'overlay)
-         (let ((start (cadr a))
-               (end (caddr a)))
-           (cond
-            ((and start end)
-             (make-overlay (cadr a) (caddr a)))
-            ;; Make deleted overlay
-            (t
-             (let ((overlay (make-overlay (point-min) (point-min))))
-               (delete-overlay overlay)
-               overlay)))))
+        ((consp a)
+         (cond
+          ((eq (car a) 'marker)
+           (set-marker (make-marker) (cdr a)))
+          ((eq (car a) 'marker*)
+           (let ((marker (make-marker)))
+             (set-marker marker (cdr a))
+             (set-marker-insertion-type marker t)
+             marker))
+          ((eq (car a) 'overlay)
+           (let ((start (cadr a))
+                 (end (caddr a)))
+             (cond
+              ((and start end)
+               (make-overlay (cadr a) (caddr a)))
+              ;; Make deleted overlay
+              (t
+               (let ((overlay (make-overlay (point-min) (point-min))))
+                 (delete-overlay overlay)
+                 overlay)))))
+          (t
+           a)))
         (t
          a)))
-      (t
-       a)))
-   tree))
+     tree))))
 
 (defun undo-fu-session--next-step (list)
   "Get the next undo step in LIST.
