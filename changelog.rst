@@ -3,8 +3,9 @@
 Change Log
 ##########
 
-- In development.
+- Version 0.6 (2023-05-20)
 
+  - Add ``undo-fu-session-ignore-temp-files`` to ignore files in temporary directories.
   - The ``undo-fu-session-incompatible-files`` match is now case insensitive for case insensitive file-systems.
 
 - Version 0.5 (2023-04-05)

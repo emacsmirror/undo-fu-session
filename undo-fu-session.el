@@ -8,7 +8,7 @@
 
 ;; URL: https://codeberg.com/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
-;; Version: 0.5
+;; Version: 0.6
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
@@ -64,6 +64,10 @@
   "Ignore encrypted files for undo session."
   :type 'boolean)
 
+(defcustom undo-fu-session-ignore-temp-files t
+  "Ignore temporary files for undo session."
+  :type 'boolean)
+
 (defcustom undo-fu-session-compression 'gz
   "The type of compression to use or nil.
 
@@ -100,6 +104,30 @@ Enforcing removes the oldest files."
   "Wrap `message' passing in STR and ARGS, without showing in the echo area."
   `(let ((inhibit-message t))
      (message ,str ,@args)))
+
+(defun undo-fu-session--canonicalize-path (path)
+  "Return the canonical PATH.
+
+This is done without adjusting trailing slashes or following links."
+  ;; Some pre-processing on `path' since it may contain the user path
+  ;; or be relative to the default directory.
+  ;;
+  ;; Notes:
+  ;; - This is loosely based on `f-same?'` from the `f' library.
+  ;;   However it's important this only runs on the user directory and NOT trusted directories
+  ;;   since there should never be any ambiguity (which could be caused by expansion)
+  ;;   regarding which path is trusted.
+  ;; - Avoid `file-truename' since this follows symbolic-links,
+  ;;   `expand-file-name' handles `~` and removing `/../' from paths.
+  (let ((file-name-handler-alist nil))
+    ;; Expand user `~' and default directory.
+    (expand-file-name path)))
+
+(defun undo-fu-session--ensure-trailing-slash (dir)
+  "Return DIR with exactly one trailing slash."
+  ;; Both "/tmp" and "/tmp//" result in "/tmp/"
+  (file-name-as-directory (directory-file-name dir)))
+
 
 ;; ---------------------------------------------------------------------------
 ;; Undo List Make Linear
@@ -449,6 +477,34 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                 (funcall matcher filename)))
           (throw 'found t))))))
 
+(defun undo-fu-session--temp-file-check (filename)
+  "Return t if FILENAME is in a temporary directory."
+  (let ((temp-dirs (list))
+        (is-temp nil))
+    (when temporary-file-directory
+      ;; Ensure a single slash so `string-prefix-p' can be used.
+      (push (undo-fu-session--ensure-trailing-slash temporary-file-directory) temp-dirs))
+
+    ;; Even if this directory doesn't exist, the check is relatively harmless.
+    (cond
+     ((memq system-type (list 'ms-dos 'windows-nt))
+      nil)
+     (t
+      (push "/tmp/" temp-dirs)
+      (push "/dev/shm/" temp-dirs)))
+
+    (setq temp-dirs (delete-dups temp-dirs))
+
+    (when temp-dirs
+      ;; Canonicalized in case the default directory happens to be TEMP.
+      (let ((filename-canonical (undo-fu-session--canonicalize-path filename)))
+        (while temp-dirs
+          (let ((dir (pop temp-dirs)))
+            (when (string-prefix-p dir filename-canonical (file-name-case-insensitive-p dir))
+              (setq is-temp t)
+              (setq temp-dirs nil))))))
+    is-temp))
+
 (defun undo-fu-session--directory-ensure ()
   "Ensure the undo directory has been created."
   (unless (file-directory-p undo-fu-session-directory)
@@ -468,6 +524,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
      ((and undo-fu-session-ignore-encrypted-files
            epa-file-handler
            (string-match-p (car epa-file-handler) filename))
+      nil)
+     ((and undo-fu-session-ignore-temp-files (undo-fu-session--temp-file-check filename))
       nil)
      ((and test-files (undo-fu-session--match-file-name filename test-files))
       nil)
