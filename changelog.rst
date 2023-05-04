@@ -3,6 +3,10 @@
 Change Log
 ##########
 
+- In development.
+
+  - The ``undo-fu-session-incompatible-files`` match is now case insensitive for case insensitive file-systems.
+
 - Version 0.5 (2023-04-05)
 
   - Fix bug when ``undo-fu-session-linear`` was disabled,

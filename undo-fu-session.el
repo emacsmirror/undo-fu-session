@@ -440,13 +440,14 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
   (catch 'found
-    (dolist (matcher test-files)
-      (when (cond
-             ((stringp matcher)
-              (string-match-p matcher filename))
-             (t
-              (funcall matcher filename)))
-        (throw 'found t)))))
+    (let ((case-fold-search (file-name-case-insensitive-p filename)))
+      (dolist (matcher test-files)
+        (when (cond
+               ((stringp matcher)
+                (string-match-p matcher filename))
+               (t
+                (funcall matcher filename)))
+          (throw 'found t))))))
 
 (defun undo-fu-session--directory-ensure ()
   "Ensure the undo directory has been created."
