@@ -78,6 +78,8 @@ Customization
    List of regexps or functions for matching file names to ignore saving/recovering undo session.
 ``undo-fu-session-incompatible-major-modes`` (``nil``)
    List of major-modes in which saving undo session should not be performed.
+``undo-fu-session-ignore-encrypted-files`` (``t``)
+   Ignore saving/recovering undo session for encrypted files (matching ``epa-file-name-regexp``).
 ``undo-fu-session-file-limit`` (``nil``)
    Number of files to store, nil to disable limiting entirely.
 
