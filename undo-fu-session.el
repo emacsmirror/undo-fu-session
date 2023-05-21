@@ -68,6 +68,17 @@
   "Ignore temporary files for undo session."
   :type 'boolean)
 
+(defcustom undo-fu-session-temp-directories
+  (cond
+   ((memq system-type (list 'ms-dos 'windows-nt))
+    (list))
+   (t
+    (list "/tmp" "/dev/shm")))
+  "Temporary directories (must be absolute).
+
+Used by `undo-fu-session-ignore-temp-files' for directories to consider temporary."
+  :type '(repeat string))
+
 (defcustom undo-fu-session-compression 'gz
   "The type of compression to use or nil.
 
@@ -479,19 +490,14 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--temp-file-check (filename)
   "Return t if FILENAME is in a temporary directory."
-  (let ((temp-dirs (list))
+  ;; Even if this directory doesn't exist, the check is relatively harmless.
+  (let ((temp-dirs
+         (mapcar #'undo-fu-session--ensure-trailing-slash undo-fu-session-temp-directories))
         (is-temp nil))
+
     (when temporary-file-directory
       ;; Ensure a single slash so `string-prefix-p' can be used.
       (push (undo-fu-session--ensure-trailing-slash temporary-file-directory) temp-dirs))
-
-    ;; Even if this directory doesn't exist, the check is relatively harmless.
-    (cond
-     ((memq system-type (list 'ms-dos 'windows-nt))
-      nil)
-     (t
-      (push "/tmp/" temp-dirs)
-      (push "/dev/shm/" temp-dirs)))
 
     (setq temp-dirs (delete-dups temp-dirs))
 

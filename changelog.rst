@@ -3,6 +3,10 @@
 Change Log
 ##########
 
+- In development
+
+  - Add ``undo-fu-session-temp-directories`` so additional directories can be considered temporary.
+
 - Version 0.6 (2023-05-20)
 
   - Add ``undo-fu-session-ignore-temp-files`` to ignore files in temporary directories.

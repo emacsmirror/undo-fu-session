@@ -81,8 +81,10 @@ Customization
 ``undo-fu-session-ignore-encrypted-files`` (``t``)
    Ignore saving/recovering undo session for encrypted files (matching ``epa-file-name-regexp``).
 ``undo-fu-session-ignore-temp-files`` (``t``)
-   Ignore saving/recovering undo session for files under ``temporary-file-directory``
-   (as well as ``/tmp`` & ``/dev/shm/``).
+   Ignore saving/recovering undo session for files under
+   ``temporary-file-directory`` & ``undo-fu-session-temp-directories``.
+``undo-fu-session-temp-directories`` (``'("/tmp" "/dev/shm")``)
+   Directories to consider temporary when ``undo-fu-session-ignore-temp-files`` is enabled.
 ``undo-fu-session-file-limit`` (``nil``)
    Number of files to store, nil to disable limiting entirely.
 
