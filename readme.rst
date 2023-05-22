@@ -74,6 +74,22 @@ Customization
 
    After changing, run ``undo-fu-session-compression-update`` to convert existing files to the newly selected format.
 
+``undo-fu-session-file-limit`` (``nil``)
+   Number of files to store, nil to disable limiting entirely.
+
+   Enforcing removes the oldest files.
+
+
+Customization (Exclusions)
+--------------------------
+
+There are various methods of excluding undo-session storage,
+this may be done to prevent storing sensitive information
+or to prevent unnecessary storage of undo-session for temporary files (such as commit messages).
+
+These exclusion options allow ``undo-fu-session-global-mode`` to be enabled.
+With exceptions added for cases where undo-session should not be stored.
+
 ``undo-fu-session-incompatible-files`` (``'()``)
    List of regexps or functions for matching file names to ignore saving/recovering undo session.
 ``undo-fu-session-incompatible-major-modes`` (``nil``)
@@ -85,10 +101,6 @@ Customization
    ``temporary-file-directory`` & ``undo-fu-session-temp-directories``.
 ``undo-fu-session-temp-directories`` (``'("/tmp" "/dev/shm")``)
    Directories to consider temporary when ``undo-fu-session-ignore-temp-files`` is enabled.
-``undo-fu-session-file-limit`` (``nil``)
-   Number of files to store, nil to disable limiting entirely.
-
-   Enforcing removes the oldest files.
 
 
 Details
