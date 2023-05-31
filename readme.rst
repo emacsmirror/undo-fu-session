@@ -63,18 +63,27 @@ you can enable this using a mode hook for e.g.
 Customization
 -------------
 
-``undo-fu-session-directory`` (``"undo-fu-session"`` in emacs user directory)
+``undo-fu-session-directory``: ``"undo-fu-session"`` in emacs user directory
    The location of stored files.
-``undo-fu-session-linear`` (``nil``)
+
+``undo-fu-session-linear``: ``nil``
    Write linear undo history, omitting branches which were themselves undone.
 
    Note that this only writes undo steps which would be used by ``undo-only``.
-``undo-fu-session-compression`` (``'bz2`` ``'gz`` ``'xz`` ``'zst`` ``nil``)
+``undo-fu-session-compression``: ``'gz``
    Compression setting for stored undo data.
+
+   Valid options:
+
+   - ``'bz2`` BZip2.
+   - ``'gz`` ZLib.
+   - ``'xz`` XZ.
+   - ``'zst`` Z-standard.
+   - ``nil`` (no compression).
 
    After changing, run ``undo-fu-session-compression-update`` to convert existing files to the newly selected format.
 
-``undo-fu-session-file-limit`` (``nil``)
+``undo-fu-session-file-limit``: ``nil``
    Number of files to store, nil to disable limiting entirely.
 
    Enforcing removes the oldest files.
