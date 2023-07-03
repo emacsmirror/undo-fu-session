@@ -120,6 +120,7 @@ Enforcing removes the oldest files."
   "Return the canonical PATH.
 
 This is done without adjusting trailing slashes or following links."
+  (declare (side-effect-free error-free))
   ;; Some pre-processing on `path' since it may contain the user path
   ;; or be relative to the default directory.
   ;;
@@ -136,6 +137,7 @@ This is done without adjusting trailing slashes or following links."
 
 (defun undo-fu-session--ensure-trailing-slash (dir)
   "Return DIR with exactly one trailing slash."
+  (declare (side-effect-free error-free))
   ;; Both "/tmp" and "/tmp//" result in "/tmp/"
   (file-name-as-directory (directory-file-name dir)))
 
@@ -221,6 +223,7 @@ ignoring all branches that aren't included in the current undo state."
 
 (defun undo-fu-session--encode (tree)
   "Encode `TREE' so that it can be stored as a file."
+  (declare (side-effect-free error-free))
   (cond
    ((eq t tree)
     ;; Special exception for a single t value (happens with `pending-undo-list').
@@ -247,6 +250,7 @@ ignoring all branches that aren't included in the current undo state."
 
 (defun undo-fu-session--decode (tree)
   "Decode `TREE' so that it can be recovered as undo data."
+  ;; NOTE: can't be `side-effect-free' because it creates overlays in the buffer.
   (cond
    ((eq t tree)
     ;; Special exception for a single t value (happens with `pending-undo-list').
@@ -285,6 +289,7 @@ ignoring all branches that aren't included in the current undo state."
   "Get the next undo step in LIST.
 
 Argument LIST compatible list `buffer-undo-list'."
+  (declare (side-effect-free error-free))
   (while (car list)
     (setq list (cdr list)))
   (while (and list (null (car list)))
@@ -315,6 +320,7 @@ INDEX-STEP are used as keys mapping to LIST elements."
   "Convert the EQUIV-TABLE into an alist of buffer list indices.
 Argument BUFFER-LIST typically `undo-buffer-list'.
 Argument PENDING-LIST typically `pending-undo-list'."
+  (declare (side-effect-free error-free))
 
   ;; Map undo-elem -> index.
   ;; Negative indices for 'pending-list'.
@@ -343,6 +349,7 @@ Argument PENDING-LIST typically `pending-undo-list'."
   "Convert EQUIV-TABLE-ALIST into a hash compatible with `undo-equiv-table'.
 Argument BUFFER-LIST an `undo-buffer-list' compatible list.
 Argument PENDING-LIST an `pending-undo-list' compatible list."
+  (declare (side-effect-free error-free))
 
   (let* ((equiv-table-length (length equiv-table-alist))
          ;; Map index -> undo-elem.
@@ -460,6 +467,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--file-name-ext ()
   "Return the current file name extension in use."
+  (declare (side-effect-free error-free))
+
   (cond
    ((symbolp undo-fu-session-compression)
     (concat "." (symbol-name undo-fu-session-compression)))
@@ -471,6 +480,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--make-file-name (filename)
   "Take the path FILENAME and return a name base on this."
+  (declare (side-effect-free error-free))
   (concat
    (file-name-concat undo-fu-session-directory
                      (url-hexify-string (convert-standard-filename (expand-file-name filename))))
@@ -478,6 +488,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
+  ;; NOTE: can't be `side-effect-free' because it calls a user defined callback.
   (catch 'found
     (let ((case-fold-search (file-name-case-insensitive-p filename)))
       (dolist (matcher test-files)
@@ -490,6 +501,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--temp-file-check (filename)
   "Return t if FILENAME is in a temporary directory."
+  (declare (side-effect-free error-free))
+
   ;; Even if this directory doesn't exist, the check is relatively harmless.
   (let ((temp-dirs
          (mapcar #'undo-fu-session--ensure-trailing-slash undo-fu-session-temp-directories))
@@ -741,6 +754,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--mode-in-any-buffer ()
   "Return non-nil if the `undo-fu-session-mode' is enabled in any buffer."
+  (declare (side-effect-free error-free))
   (let ((mode-in-any-buffer nil)
         (buffers (buffer-list)))
     (while buffers
