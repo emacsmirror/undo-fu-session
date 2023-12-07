@@ -5,6 +5,7 @@ Change Log
 
 - In development
 
+  - Support derived major-modes when checking ``undo-fu-session-incompatible-major-modes``.
   - Add ``undo-fu-session-temp-directories`` so additional directories can be considered temporary.
 
 - Version 0.6 (2023-05-20)

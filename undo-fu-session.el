@@ -499,6 +499,21 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                 (funcall matcher filename)))
           (throw 'found t))))))
 
+(defun undo-fu-session--match-major-mode (mode test-modes)
+  "Return t if MODE match any item in TEST-MODES."
+  (declare (side-effect-free error-free))
+  (let ((found nil))
+    (while mode
+      (setq mode
+            (cond
+             ((memq mode test-modes)
+              (setq found t)
+              ;; Clear to break early.
+              nil)
+             (t
+              (get mode 'derived-mode-parent)))))
+    found))
+
 (defun undo-fu-session--temp-file-check (filename)
   "Return t if FILENAME is in a temporary directory."
   (declare (side-effect-free error-free))
@@ -548,7 +563,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       nil)
      ((and test-files (undo-fu-session--match-file-name filename test-files))
       nil)
-     ((and test-modes (memq (buffer-local-value 'major-mode buffer) test-modes))
+     ((and test-modes
+           (undo-fu-session--match-major-mode (buffer-local-value 'major-mode buffer) test-modes))
       nil)
      (t
       t))))
