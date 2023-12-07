@@ -489,15 +489,19 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
   ;; NOTE: can't be `side-effect-free' because it calls a user defined callback.
-  (catch 'found
-    (let ((case-fold-search (file-name-case-insensitive-p filename)))
-      (dolist (matcher test-files)
+  (let ((case-fold-search (file-name-case-insensitive-p filename))
+        (found nil))
+    (while test-files
+      (let ((matcher (pop test-files)))
         (when (cond
                ((stringp matcher)
                 (string-match-p matcher filename))
                (t
                 (funcall matcher filename)))
-          (throw 'found t))))))
+          ;; Break.
+          (setq test-files nil)
+          (setq found t))))
+    found))
 
 (defun undo-fu-session--match-major-mode (mode test-modes)
   "Return t if MODE match any item in TEST-MODES."
