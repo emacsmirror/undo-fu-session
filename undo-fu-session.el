@@ -6,7 +6,7 @@
 
 ;; Author: Campbell Barton <ideasman42@gmail.com>
 
-;; URL: https://codeberg.com/ideasman42/emacs-undo-fu-session
+;; URL: https://codeberg.org/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
 ;; Version: 0.6
 ;; Package-Requires: ((emacs "28.1"))
@@ -736,7 +736,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
         t))))
 
 (defun undo-fu-session--recover-safe ()
-  "Public restore function, typically called by `find-file-hook'."
+  "Restore function, typically called by `find-file-hook'."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
         (undo-fu-session--recover-impl)
