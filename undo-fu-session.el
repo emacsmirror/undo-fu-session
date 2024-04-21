@@ -120,7 +120,7 @@ Enforcing removes the oldest files."
   "Return the canonical PATH.
 
 This is done without adjusting trailing slashes or following links."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   ;; Some pre-processing on `path' since it may contain the user path
   ;; or be relative to the default directory.
   ;;
@@ -137,7 +137,7 @@ This is done without adjusting trailing slashes or following links."
 
 (defun undo-fu-session--ensure-trailing-slash (dir)
   "Return DIR with exactly one trailing slash."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   ;; Both "/tmp" and "/tmp//" result in "/tmp/"
   (file-name-as-directory (directory-file-name dir)))
 
@@ -152,6 +152,7 @@ This is done without adjusting trailing slashes or following links."
 
 This gives the same behavior as running `undo-only',
 ignoring all branches that aren't included in the current undo state."
+  (declare (important-return-value t))
   (let ((linear-list (cons nil nil)))
     ;; Store the last `cons' cell to build a list in-order
     ;; (saves pushing to the front of the list then reversing).
@@ -186,6 +187,7 @@ ignoring all branches that aren't included in the current undo state."
 
 (defun undo-fu-session--walk-tree (fn tree)
   "Operate recursively on undo-list, calling FN TREE."
+  (declare (important-return-value t))
   (cond
    ((consp tree)
     (let ((value (funcall fn tree)))
@@ -223,7 +225,7 @@ ignoring all branches that aren't included in the current undo state."
 
 (defun undo-fu-session--encode (tree)
   "Encode `TREE' so that it can be stored as a file."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   (cond
    ((eq t tree)
     ;; Special exception for a single t value (happens with `pending-undo-list').
@@ -250,6 +252,7 @@ ignoring all branches that aren't included in the current undo state."
 
 (defun undo-fu-session--decode (tree)
   "Decode `TREE' so that it can be recovered as undo data."
+  (declare (important-return-value t))
   ;; NOTE: can't be `side-effect-free' because it creates overlays in the buffer.
   (cond
    ((eq t tree)
@@ -289,7 +292,7 @@ ignoring all branches that aren't included in the current undo state."
   "Get the next undo step in LIST.
 
 Argument LIST compatible list `buffer-undo-list'."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   (while (car list)
     (setq list (cdr list)))
   (while (and list (null (car list)))
@@ -300,6 +303,7 @@ Argument LIST compatible list `buffer-undo-list'."
   "Populate the STEP-TO-INDEX-HASH with LIST element.
 
 List elements are used as keys mapping to INDEX by INDEX-STEP."
+  (declare (important-return-value nil))
   (unless (eq list t)
     (while list
       (puthash list index step-to-index-hash)
@@ -310,6 +314,7 @@ List elements are used as keys mapping to INDEX by INDEX-STEP."
   "Populate the STEP-FROM-INDEX-HASH with INDEX by INDEX-STEP.
 
 INDEX-STEP are used as keys mapping to LIST elements."
+  (declare (important-return-value nil))
   (unless (eq list t)
     (while list
       (puthash index list step-from-index-hash)
@@ -320,7 +325,7 @@ INDEX-STEP are used as keys mapping to LIST elements."
   "Convert the EQUIV-TABLE into an alist of buffer list indices.
 Argument BUFFER-LIST typically `undo-buffer-list'.
 Argument PENDING-LIST typically `pending-undo-list'."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
 
   ;; Map undo-elem -> index.
   ;; Negative indices for 'pending-list'.
@@ -349,7 +354,7 @@ Argument PENDING-LIST typically `pending-undo-list'."
   "Convert EQUIV-TABLE-ALIST into a hash compatible with `undo-equiv-table'.
 Argument BUFFER-LIST an `undo-buffer-list' compatible list.
 Argument PENDING-LIST an `pending-undo-list' compatible list."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
 
   (let* ((equiv-table-length (length equiv-table-alist))
          ;; Map index -> undo-elem.
@@ -378,6 +383,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--file-limit-enforce ()
   "Limit the number of session files to the `undo-fu-session-file-limit' newest."
+  (declare (important-return-value nil))
   ;; While errors are highly unlikely in this case,
   ;; clearing old files should _never_ interfere with other operations,
   ;; so surround with error a check & error message.
@@ -410,6 +416,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--compression-update-impl ()
   "Use the current compression settings."
+  (declare (important-return-value nil))
   (let ((count-complete 0)
         (count-pending 0)
         (size-src 0)
@@ -467,7 +474,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--file-name-ext ()
   "Return the current file name extension in use."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
 
   (cond
    ((symbolp undo-fu-session-compression)
@@ -480,7 +487,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--make-file-name (filename)
   "Take the path FILENAME and return a name base on this."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   (concat
    (file-name-concat undo-fu-session-directory
                      (url-hexify-string (convert-standard-filename (expand-file-name filename))))
@@ -488,6 +495,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
+  (declare (important-return-value t))
   ;; NOTE: can't be `side-effect-free' because it calls a user defined callback.
   (let ((case-fold-search (file-name-case-insensitive-p filename))
         (found nil))
@@ -505,7 +513,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--match-major-mode (mode test-modes)
   "Return t if MODE match any item in TEST-MODES."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   (let ((found nil))
     (while mode
       (setq mode
@@ -520,7 +528,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--temp-file-check (filename)
   "Return t if FILENAME is in a temporary directory."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
 
   ;; Even if this directory doesn't exist, the check is relatively harmless.
   (let ((temp-dirs
@@ -545,6 +553,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--directory-ensure ()
   "Ensure the undo directory has been created."
+  (declare (important-return-value nil))
   (unless (file-directory-p undo-fu-session-directory)
     (make-directory undo-fu-session-directory t)
     ;; These files should only readable by the owner, see #2.
@@ -553,6 +562,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--recover-buffer-p (buffer)
   "Return t if undo data of BUFFER should be recovered."
+  (declare (important-return-value t))
   (let ((filename (buffer-file-name buffer))
         (test-files undo-fu-session-incompatible-files)
         (test-modes undo-fu-session-incompatible-major-modes))
@@ -575,6 +585,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--save-impl ()
   "Internal save logic, resulting in t on success."
+  (declare (important-return-value nil))
 
   ;; Paranoid as it's possible the directory was removed since the mode was enabled.
   (undo-fu-session--directory-ensure)
@@ -646,6 +657,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--save-safe ()
   "Public save function, typically called by `write-file-functions'."
+  (declare (important-return-value nil))
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
         (undo-fu-session--save-impl)
@@ -655,6 +667,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--recover-impl ()
   "Internal restore logic, resulting in t on success."
+  (declare (important-return-value nil))
   (let ((buffer (current-buffer))
         (filename (buffer-file-name))
         (undo-file nil)
@@ -737,6 +750,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--recover-safe ()
   "Restore function, typically called by `find-file-hook'."
+  (declare (important-return-value nil))
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
         (undo-fu-session--recover-impl)
@@ -750,18 +764,21 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 ;;;###autoload
 (defun undo-fu-session-save ()
   "Save undo data."
+  (declare (important-return-value nil))
   (interactive)
   (undo-fu-session--save-safe))
 
 ;;;###autoload
 (defun undo-fu-session-recover ()
   "Recover undo data."
+  (declare (important-return-value nil))
   (interactive)
   (undo-fu-session--recover-safe))
 
 ;;;###autoload
 (defun undo-fu-session-compression-update ()
   "Update existing undo session data after changing compression settings."
+  (declare (important-return-value nil))
   (interactive)
   (undo-fu-session--compression-update-impl))
 
@@ -786,6 +803,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--mode-enable ()
   "Turn on `undo-fu-session-mode' for the current buffer."
+  (declare (important-return-value nil))
   ;; Even though this runs on save, call here since it's better the user catches
   ;; errors when the mode is enabled instead of having the hook fail.
   (undo-fu-session--directory-ensure)
@@ -795,12 +813,14 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--mode-disable ()
   "Turn off `undo-fu-session-mode' for the current buffer."
+  (declare (important-return-value nil))
   (unless (undo-fu-session--mode-in-any-buffer)
     (remove-hook 'write-file-functions #'undo-fu-session--save-safe)
     (remove-hook 'find-file-hook #'undo-fu-session--recover-safe)))
 
 (defun undo-fu-session--mode-turn-on ()
   "Enable command `undo-fu-session-mode'."
+  (declare (important-return-value nil))
   (when (and
          ;; Not already enabled.
          (not (bound-and-true-p undo-fu-session-mode))

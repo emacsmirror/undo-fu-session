@@ -50,6 +50,7 @@
 
 (defun undo-fu-session-test-run-all-impl ()
   "Run each test and exit."
+  (declare (important-return-value nil))
 
   (undo-fu-session-test--with-temp-dir
    ;; Don't touch the users home directory.
@@ -102,6 +103,7 @@
 
 (defun undo-fu-session-test-run-all ()
   "Run every test."
+  (declare (important-return-value nil))
 
   (undo-fu-session-global-mode)
 
