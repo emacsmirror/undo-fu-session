@@ -80,8 +80,7 @@
                (`7 (yank))
                (`8
                 (kill-region
-                 (+ (point-min) (random (point-max)))
-                 (+ (point-min) (random (point-max))))))))
+                 (+ (point-min) (random (point-max))) (+ (point-min) (random (point-max))))))))
          (save-buffer)
          (undo-fu-session-save)
          (kill-buffer (current-buffer)))
