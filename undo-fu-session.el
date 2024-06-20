@@ -453,7 +453,21 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
               (progn
                 (with-temp-buffer
                   (insert-file-contents file-src-full)
-                  (write-region nil nil file-dst-full nil 0))
+                  ;; Don't create lock-files for the following reasons:
+                  ;; - The file name may be too long and fail to lock (see #10).
+                  ;; - Locking is already handled by saving the file from which this undo-data
+                  ;;   is created so locking the undo-data if of limited use.
+                  ;; - Small but unnecessary overhead.
+                  ;;
+                  ;; Having said this, there is a theoretical possibility two emacs instances
+                  ;; could write undo-data at once. Nevertheless, the undo-data *must* be in
+                  ;; sync with the file that is written (matching hash & length),
+                  ;; so there is practically no benefit in writing a file that is "correct" with
+                  ;; respect to locking, when the undo-data doesn't match the file contents.
+                  ;; In summary, we would either have to lock both files at once, or locking
+                  ;; when writing undo data close to useless.
+                  (let ((create-lockfiles nil))
+                    (write-region nil nil file-dst-full nil 0)))
 
                 (setq size-src (+ size-src (file-attribute-size (file-attributes file-src-full))))
                 (setq size-dst (+ size-dst (file-attribute-size (file-attributes file-dst-full))))
@@ -652,7 +666,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (prin1 content-header (current-buffer))
           (write-char ?\n (current-buffer))
           (prin1 content-data (current-buffer))
-          (write-region nil nil undo-file nil 0)
+          (let ((create-lockfiles nil))
+            (write-region nil nil undo-file nil 0))
           t)))))
 
 (defun undo-fu-session--save-safe ()
