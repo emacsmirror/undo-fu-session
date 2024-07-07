@@ -115,6 +115,35 @@ With exceptions added for cases where undo-session should not be stored.
    Directories to consider temporary when ``undo-fu-session-ignore-temp-files`` is enabled.
 
 
+Customization (Data Storage)
+----------------------------
+
+This is advanced functionality for users who prefer to define their own method
+of defining the file-system location of undo-fu-session data.
+
+``undo-fu-session-make-file-name-function``: ``'undo-fu-session-make-file-name``
+   This function takes two arguments ``(filepath extension)`` and must return
+   a the path where undo data is stored, ending with ``extension``.
+
+If you wish to store undo data next in the same directory as the file being edited
+this example shows how it can be achieved.
+
+Take care, if you define paths outside of ``undo-fu-session-directory`` the following functionality
+
+- ``undo-fu-session-file-limit`` isn't applied.
+- ``undo-fu-session-compression-update`` won't update compression on existing undo data.
+
+This example function stores undo data for ``~/file.txt`` as ``~/.#file#.undo-fu-session.gz``.
+
+.. code-block:: elisp
+
+   (setq undo-fu-session-make-file-name-function
+         (lambda (filepath extension)
+           (let* ((filename (file-name-nondirectory filepath))
+                  (dirpath (substring filepath 0 (- (length filepath) (length filename)))))
+             (concat dirpath ".#" filename "#.undo-fu-session" extension))))
+
+
 Details
 =======
 

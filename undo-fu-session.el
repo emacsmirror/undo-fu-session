@@ -60,6 +60,12 @@
   "The directory to store undo data."
   :type 'string)
 
+(defcustom undo-fu-session-make-file-name-function 'undo-fu-session-make-file-name
+  "The function that computes the session file-path for the current buffer.
+The function takes two arguments (path, extension).
+The returned path must use the extension argument."
+  :type 'function)
+
 (defcustom undo-fu-session-ignore-encrypted-files t
   "Ignore encrypted files for undo session."
   :type 'boolean)
@@ -501,11 +507,23 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
 
 (defun undo-fu-session--make-file-name (filename)
   "Take the path FILENAME and return a name base on this."
+  (declare (important-return-value t))
+  (let ((ext (undo-fu-session--file-name-ext)))
+    (condition-case err
+        (funcall undo-fu-session-make-file-name-function filename ext)
+      (error
+       (message "Undo-Fu-Session: error (%s) running callback %S, using the default callback"
+                (error-message-string err)
+                undo-fu-session-make-file-name-function)
+       (undo-fu-session-make-file-name filename ext)))))
+
+(defun undo-fu-session-make-file-name (filename ext)
+  "Take the path FILENAME, EXT and return a name base on this."
   (declare (important-return-value t) (side-effect-free error-free))
   (concat
    (file-name-concat undo-fu-session-directory
                      (url-hexify-string (convert-standard-filename (expand-file-name filename))))
-   (undo-fu-session--file-name-ext)))
+   ext))
 
 (defun undo-fu-session--match-file-name (filename test-files)
   "Return t if FILENAME match any item in TEST-FILES."
