@@ -105,6 +105,9 @@
   "Run every test."
   (declare (important-return-value nil))
 
+  ;; Tests use a temporary directory.
+  (setq undo-fu-session-ignore-temp-files nil)
+
   (undo-fu-session-global-mode)
 
   (message "Running with `undo-fu-session-linear' enabled:")
