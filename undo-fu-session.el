@@ -278,11 +278,11 @@ ignoring all branches that aren't included in the current undo state."
              (set-marker-insertion-type marker t)
              marker))
           ((eq (car a) 'overlay)
-           (let ((start (cadr a))
+           (let ((beg (cadr a))
                  (end (caddr a)))
              (cond
-              ((and start end)
-               (make-overlay (cadr a) (caddr a)))
+              ((and beg end)
+               (make-overlay beg end))
               ;; Make deleted overlay
               (t
                (let ((overlay (make-overlay (point-min) (point-min))))
