@@ -269,27 +269,29 @@ ignoring all branches that aren't included in the current undo state."
      (lambda (a)
        (cond
         ((consp a)
-         (cond
-          ((eq (car a) 'marker)
-           (set-marker (make-marker) (cdr a)))
-          ((eq (car a) 'marker*)
-           (let ((marker (make-marker)))
-             (set-marker marker (cdr a))
-             (set-marker-insertion-type marker t)
-             marker))
-          ((eq (car a) 'overlay)
-           (let ((beg (cadr a))
-                 (end (caddr a)))
-             (cond
-              ((and beg end)
-               (make-overlay beg end))
-              ;; Make deleted overlay
-              (t
-               (let ((overlay (make-overlay (point-min) (point-min))))
-                 (delete-overlay overlay)
-                 overlay)))))
-          (t
-           a)))
+         (let ((a-car (car a))
+               (a-cdr (cdr a)))
+           (cond
+            ((eq a-car 'marker)
+             (set-marker (make-marker) a-cdr))
+            ((eq a-car 'marker*)
+             (let ((marker (make-marker)))
+               (set-marker marker a-cdr)
+               (set-marker-insertion-type marker t)
+               marker))
+            ((eq a-car 'overlay)
+             (let ((beg (car a-cdr))
+                   (end (car (cdr a-cdr))))
+               (cond
+                ((and beg end)
+                 (make-overlay beg end))
+                ;; Make deleted overlay
+                (t
+                 (let ((overlay (make-overlay (point-min) (point-min))))
+                   (delete-overlay overlay)
+                   overlay)))))
+            (t
+             a))))
         (t
          a)))
      tree))))
