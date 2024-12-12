@@ -511,11 +511,10 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (let ((ext (undo-fu-session--file-name-ext)))
     (condition-case err
         (funcall undo-fu-session-make-file-name-function filename ext)
-      (error
-       (message "Undo-Fu-Session: error (%s) running callback %S, using the default callback"
-                (error-message-string err)
-                undo-fu-session-make-file-name-function)
-       (undo-fu-session-make-file-name filename ext)))))
+      (error (message "Undo-Fu-Session: error (%s) running callback %S, using the default callback"
+                      (error-message-string err)
+                      undo-fu-session-make-file-name-function)
+             (undo-fu-session-make-file-name filename ext)))))
 
 (defun undo-fu-session-make-file-name (filename ext)
   "Take the path FILENAME, EXT and return a name base on this."
