@@ -114,6 +114,32 @@ Enforcing removes the oldest files."
 
 
 ;; ---------------------------------------------------------------------------
+;; Compatibility
+;;
+
+;; Workaround bug in Emacs 30, where this macro fails when to enable
+;; auto-compression-mode when a file is loaded from the command line.
+;; The problem seems to be `auto-compression-mode' is true,
+;; but the mode has not started when undo-fu-session runs.
+;; Workaround the bug by replacing the auto-compression-mode
+;; check with `jka-compr-installed-p'.
+;; I didn't manage to redo this in simple test cases (for a report),
+;; so use a workaround for now.
+(defmacro undo-fu-session--with-auto-compression-mode (&rest body)
+  "Evaluate BODY with automatic file compression and uncompression enabled."
+  (declare (indent 0))
+  (let ((already-installed (make-symbol "already-installed")))
+    `(let ((,already-installed (jka-compr-installed-p)))
+       (unwind-protect
+           (progn
+             (unless ,already-installed
+               (auto-compression-mode 1))
+             ,@body)
+         (unless ,already-installed
+           (auto-compression-mode -1))))))
+
+
+;; ---------------------------------------------------------------------------
 ;; Utility Functions
 ;;
 
@@ -448,7 +474,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
             (push file-src-full files-to-convert)))))
 
     (message "Operating on %d file(s) in \"%s\"" count-pending undo-fu-session-directory)
-    (with-auto-compression-mode
+    (undo-fu-session--with-auto-compression-mode
       (dolist (file-src-full files-to-convert)
         (let ((file-dst-full (file-name-with-extension file-src-full ext-dst)))
           (message "File %d of %d: %s"
@@ -678,7 +704,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
         (unless (file-exists-p undo-file)
           (undo-fu-session--file-limit-enforce)))
 
-      (with-auto-compression-mode
+      (undo-fu-session--with-auto-compression-mode
         (with-temp-buffer
           (prin1 content-header (current-buffer))
           (write-char ?\n (current-buffer))
@@ -722,7 +748,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (unless (file-exists-p undo-file)
         (throw 'exit nil))
 
-      (with-auto-compression-mode
+      (undo-fu-session--with-auto-compression-mode
         (with-temp-buffer
           (insert-file-contents undo-file)
           (goto-char (point-min))
