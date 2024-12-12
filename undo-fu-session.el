@@ -128,15 +128,19 @@ Enforcing removes the oldest files."
 (defmacro undo-fu-session--with-auto-compression-mode (&rest body)
   "Evaluate BODY with automatic file compression and uncompression enabled."
   (declare (indent 0))
-  (let ((already-installed (make-symbol "already-installed")))
-    `(let ((,already-installed (jka-compr-installed-p)))
+  (let ((already-installed (make-symbol "already-installed"))
+        (already-installed-value (make-symbol "already-installed-value")))
+    `(let ((,already-installed (jka-compr-installed-p))
+           (,already-installed-value auto-compression-mode))
        (unwind-protect
            (progn
              (unless ,already-installed
                (auto-compression-mode 1))
              ,@body)
-         (unless ,already-installed
-           (auto-compression-mode -1))))))
+         (unless (or ,already-installed)
+           (auto-compression-mode -1))
+         ;; Restore the initial state (even if it's inconsistent).
+         (setq auto-compression-mode ,already-installed-value)))))
 
 
 ;; ---------------------------------------------------------------------------
