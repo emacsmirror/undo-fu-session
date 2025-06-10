@@ -260,7 +260,7 @@ ignoring all branches that aren't included in the current undo state."
     (funcall fn tree))))
 
 (defun undo-fu-session--encode (tree)
-  "Encode `TREE' so that it can be stored as a file."
+  "Encode TREE so that it can be stored as a file."
   (declare (important-return-value t) (side-effect-free error-free))
   (cond
    ((eq t tree)
@@ -287,7 +287,7 @@ ignoring all branches that aren't included in the current undo state."
      tree))))
 
 (defun undo-fu-session--decode (tree)
-  "Decode `TREE' so that it can be recovered as undo data."
+  "Decode TREE so that it can be recovered as undo data."
   (declare (important-return-value t))
   ;; NOTE: can't be `side-effect-free' because it creates overlays in the buffer.
   (cond
