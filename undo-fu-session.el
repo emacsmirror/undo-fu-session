@@ -444,7 +444,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                (message "Undo-Fu-Session error deleting '%s' for '%s'"
                         (error-message-string err-2)
                         file))))))
-    (error (message "Undo-Fu-Session error limiting files '%s'" (error-message-string err-1)))))
+    (error
+     (message "Undo-Fu-Session error limiting files '%s'" (error-message-string err-1)))))
 
 
 ;; ---------------------------------------------------------------------------
@@ -511,7 +512,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                 (delete-file file-src-full)
                 (setq count-complete (1+ count-complete)))
 
-            (error (message "Error: %s" (error-message-string err)))))))
+            (error
+             (message "Error: %s" (error-message-string err)))))))
 
     (message "Completed %d file(s) (size was %s, now %s)"
              count-complete
@@ -541,10 +543,11 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (let ((ext (undo-fu-session--file-name-ext)))
     (condition-case err
         (funcall undo-fu-session-make-file-name-function filename ext)
-      (error (message "Undo-Fu-Session: error (%s) running callback %S, using the default callback"
-                      (error-message-string err)
-                      undo-fu-session-make-file-name-function)
-             (undo-fu-session-make-file-name filename ext)))))
+      (error
+       (message "Undo-Fu-Session: error (%s) running callback %S, using the default callback"
+                (error-message-string err)
+                undo-fu-session-make-file-name-function)
+       (undo-fu-session-make-file-name filename ext)))))
 
 (defun undo-fu-session-make-file-name (filename ext)
   "Take the path FILENAME, EXT and return a name base on this."
@@ -723,7 +726,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (when (bound-and-true-p undo-fu-session-mode)
     (condition-case err
         (undo-fu-session--save-impl)
-      (error (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err)))))
+      (error
+       (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err)))))
   ;; Important to return NIL, to show the file wasn't saved.
   nil)
 
