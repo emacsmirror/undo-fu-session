@@ -343,7 +343,7 @@ List elements are used as keys mapping to INDEX by INDEX-STEP."
   (unless (eq list t)
     (while list
       (puthash list index step-to-index-hash)
-      (setq index (+ index index-step))
+      (incf index index-step)
       (setq list (undo-fu-session--next-step list)))))
 
 (defun undo-fu-session--list-from-index-map (list index index-step step-from-index-hash)
@@ -354,7 +354,7 @@ INDEX-STEP are used as keys mapping to LIST elements."
   (unless (eq list t)
     (while list
       (puthash index list step-from-index-hash)
-      (setq index (+ index index-step))
+      (incf index index-step)
       (setq list (undo-fu-session--next-step list)))))
 
 (defun undo-fu-session--equivtable-encode (equiv-table buffer-list pending-list)
@@ -506,8 +506,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                   (let ((create-lockfiles nil))
                     (write-region nil nil file-dst-full nil 0)))
 
-                (setq size-src (+ size-src (file-attribute-size (file-attributes file-src-full))))
-                (setq size-dst (+ size-dst (file-attribute-size (file-attributes file-dst-full))))
+                (incf size-src (file-attribute-size (file-attributes file-src-full)))
+                (incf size-dst (file-attribute-size (file-attributes file-dst-full)))
 
                 (delete-file file-src-full)
                 (setq count-complete (1+ count-complete)))
