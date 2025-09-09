@@ -475,7 +475,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (let ((file-src-full (file-name-concat undo-fu-session-directory file-src)))
         (unless (file-directory-p file-src-full)
           (unless (string-suffix-p ext-dst file-src)
-            (setq count-pending (1+ count-pending))
+            (incf count-pending)
             (push file-src-full files-to-convert)))))
 
     (message "Operating on %d file(s) in \"%s\"" count-pending undo-fu-session-directory)
@@ -510,7 +510,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                 (incf size-dst (file-attribute-size (file-attributes file-dst-full)))
 
                 (delete-file file-src-full)
-                (setq count-complete (1+ count-complete)))
+                (incf count-complete))
 
             (error
              (message "Error: %s" (error-message-string err)))))))
