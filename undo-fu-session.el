@@ -45,6 +45,47 @@
 
 
 ;; ---------------------------------------------------------------------------
+;; Compatibility
+
+(when (and (version< emacs-version "31.1") (not (and (fboundp 'incf) (fboundp 'decf))))
+  (defmacro incf (place &optional delta)
+    "Increment PLACE by DELTA or 1."
+    (declare (debug (gv-place &optional form)))
+    (gv-letplace (getter setter) place
+      (funcall setter `(+ ,getter ,(or delta 1)))))
+  (defmacro decf (place &optional delta)
+    "Decrement PLACE by DELTA or 1."
+    (declare (debug (gv-place &optional form)))
+    (gv-letplace (getter setter) place
+      (funcall setter `(- ,getter ,(or delta 1))))))
+
+;; Workaround bug in Emacs 30, where this macro fails when to enable
+;; auto-compression-mode when a file is loaded from the command line.
+;; The problem seems to be `auto-compression-mode' is true,
+;; but the mode has not started when undo-fu-session runs.
+;; Workaround the bug by replacing the auto-compression-mode
+;; check with `jka-compr-installed-p'.
+;; I didn't manage to redo this in simple test cases (for a report),
+;; so use a workaround for now.
+(defmacro undo-fu-session--with-auto-compression-mode (&rest body)
+  "Evaluate BODY with automatic file compression and uncompression enabled."
+  (declare (indent 0))
+  (let ((already-installed (make-symbol "already-installed"))
+        (already-installed-value (make-symbol "already-installed-value")))
+    `(let ((,already-installed (jka-compr-installed-p))
+           (,already-installed-value auto-compression-mode))
+       (unwind-protect
+           (progn
+             (unless ,already-installed
+               (auto-compression-mode 1))
+             ,@body)
+         (unless (or ,already-installed)
+           (auto-compression-mode -1))
+         ;; Restore the initial state (even if it's inconsistent).
+         (setq auto-compression-mode ,already-installed-value)))))
+
+
+;; ---------------------------------------------------------------------------
 ;; Custom variables.
 
 (defgroup undo-fu-session nil
@@ -111,36 +152,6 @@ to convert existing files to the newly selected format."
 
 Enforcing removes the oldest files."
   :type 'integer)
-
-
-;; ---------------------------------------------------------------------------
-;; Compatibility
-;;
-
-;; Workaround bug in Emacs 30, where this macro fails when to enable
-;; auto-compression-mode when a file is loaded from the command line.
-;; The problem seems to be `auto-compression-mode' is true,
-;; but the mode has not started when undo-fu-session runs.
-;; Workaround the bug by replacing the auto-compression-mode
-;; check with `jka-compr-installed-p'.
-;; I didn't manage to redo this in simple test cases (for a report),
-;; so use a workaround for now.
-(defmacro undo-fu-session--with-auto-compression-mode (&rest body)
-  "Evaluate BODY with automatic file compression and uncompression enabled."
-  (declare (indent 0))
-  (let ((already-installed (make-symbol "already-installed"))
-        (already-installed-value (make-symbol "already-installed-value")))
-    `(let ((,already-installed (jka-compr-installed-p))
-           (,already-installed-value auto-compression-mode))
-       (unwind-protect
-           (progn
-             (unless ,already-installed
-               (auto-compression-mode 1))
-             ,@body)
-         (unless (or ,already-installed)
-           (auto-compression-mode -1))
-         ;; Restore the initial state (even if it's inconsistent).
-         (setq auto-compression-mode ,already-installed-value)))))
 
 
 ;; ---------------------------------------------------------------------------
