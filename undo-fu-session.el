@@ -263,7 +263,7 @@ ignoring all branches that aren't included in the current undo state."
        ((eq value tree)
         (let* ((length (length tree))
                (vector (make-vector length nil)))
-          (dotimes (i (1- length))
+          (dotimes (i length)
             (aset vector i (undo-fu-session--walk-tree fn (aref tree i))))
           vector))
        (t
