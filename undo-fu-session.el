@@ -34,7 +34,7 @@
 ;; mode hooks instead of calling `undo-fu-session-global-mode'.
 ;; The following example enables this for org-mode:
 ;;
-;;   (add-hook 'org-mode-hook (lambda () (undo-fu-session-mode))
+;;   (add-hook 'org-mode-hook (lambda () (undo-fu-session-mode)))
 ;;
 
 ;;; Code:
@@ -550,7 +550,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     ".el")))
 
 (defun undo-fu-session--make-file-name (filename)
-  "Take the path FILENAME and return a name base on this."
+  "Take the path FILENAME and return a name based on this."
   (declare (important-return-value t))
   (let ((ext (undo-fu-session--file-name-ext)))
     (condition-case err
@@ -739,7 +739,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (condition-case err
         (undo-fu-session--save-impl)
       (error
-       (message "Undo-Fu-Session can not save undo data: %s" (error-message-string err)))))
+       (message "Undo-Fu-Session cannot save undo data: %s" (error-message-string err)))))
   ;; Important to return NIL, to show the file wasn't saved.
   nil)
 
@@ -833,7 +833,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     (condition-case err
         (undo-fu-session--recover-impl)
       (error
-       (message "Undo-Fu-Session can not recover undo data: %s" (error-message-string err))))))
+       (message "Undo-Fu-Session cannot recover undo data: %s" (error-message-string err))))))
 
 
 ;; ---------------------------------------------------------------------------
