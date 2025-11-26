@@ -209,7 +209,7 @@ ignoring all branches that aren't included in the current undo state."
                ;; Collapse all redo branches (giving the same results as if running `undo-only')
                (while (setq undo-list-next (gethash undo-list equiv-table))
                  (setq undo-list undo-list-next))
-               (and undo-list (not (eq t undo-list))))
+               (and undo-list (null (eq t undo-list))))
 
         ;; Pop all steps until the next boundary 'nil'.
         (let ((undo-elt t))
@@ -225,7 +225,7 @@ ignoring all branches that aren't included in the current undo state."
     ;; Note that we use 'nil' as this is what `buffer-undo-list' is set
     ;; to when there are no undo steps yet.
     (cond
-     ((and linear-list (not (equal (list nil) linear-list)))
+     ((and linear-list (null (equal (list nil) linear-list)))
       linear-list)
      (t
       nil))))
@@ -901,12 +901,12 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (declare (important-return-value nil))
   (when (and
          ;; Not already enabled.
-         (not (bound-and-true-p undo-fu-session-mode))
+         (null (bound-and-true-p undo-fu-session-mode))
          ;; Not in the mini-buffer.
-         (not (minibufferp))
+         (null (minibufferp))
          ;; Not a special mode (package list, tabulated data ... etc)
          ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
-         (not (derived-mode-p 'special-mode)))
+         (null (derived-mode-p 'special-mode)))
     (undo-fu-session-mode 1)))
 
 ;;;###autoload
