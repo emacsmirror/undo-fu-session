@@ -901,7 +901,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (declare (important-return-value nil))
   (when (and
          ;; Not already enabled.
-         (null (bound-and-true-p undo-fu-session-mode))
+         (not (bound-and-true-p undo-fu-session-mode))
          ;; Not in the mini-buffer.
          (null (minibufferp))
          ;; Not a special mode (package list, tabulated data ... etc)
