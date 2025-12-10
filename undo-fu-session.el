@@ -80,7 +80,7 @@
              (unless ,already-installed
                (auto-compression-mode 1))
              ,@body)
-         (unless (or ,already-installed)
+         (unless ,already-installed
            (auto-compression-mode -1))
          ;; Restore the initial state (even if it's inconsistent).
          (setq auto-compression-mode ,already-installed-value)))))
@@ -118,7 +118,7 @@ The returned path must use the extension argument."
 
 (defcustom undo-fu-session-temp-directories
   (cond
-   ((memq system-type (list 'ms-dos 'windows-nt))
+   ((memq system-type '(ms-dos windows-nt))
     (list))
    (t
     (list "/tmp" "/dev/shm")))
@@ -385,15 +385,14 @@ Argument PENDING-LIST typically `pending-undo-list'."
 
     (maphash
      (lambda (key val)
-       (let ((key-num (gethash key step-to-index-hash))
-             (val-num
-              (cond
-               ((eq t val)
-                t)
-               (t
-                (gethash val step-to-index-hash)))))
-         (when (and key-num val-num)
-           (push (cons key-num val-num) equiv-table-alist))))
+       (when-let* ((key-num (gethash key step-to-index-hash))
+                   (val-num
+                    (cond
+                     ((eq t val)
+                      t)
+                     (t
+                      (gethash val step-to-index-hash)))))
+         (push (cons key-num val-num) equiv-table-alist)))
      equiv-table)
     equiv-table-alist))
 
