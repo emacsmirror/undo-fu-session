@@ -17,7 +17,7 @@
 ;; individual file buffers persistently.
 ;;
 
-;;; Usage
+;;; Usage:
 
 ;;
 ;; Write the following code to your .emacs file:
@@ -371,7 +371,7 @@ INDEX-STEP are used as keys mapping to LIST elements."
 
 (defun undo-fu-session--equivtable-encode (equiv-table buffer-list pending-list)
   "Convert the EQUIV-TABLE into an alist of buffer list indices.
-Argument BUFFER-LIST typically `undo-buffer-list'.
+Argument BUFFER-LIST typically `buffer-undo-list'.
 Argument PENDING-LIST typically `pending-undo-list'."
   (declare (important-return-value t) (side-effect-free error-free))
 
@@ -400,7 +400,7 @@ Argument PENDING-LIST typically `pending-undo-list'."
 
 (defun undo-fu-session--equivtable-decode (equiv-table-alist buffer-list pending-list)
   "Convert EQUIV-TABLE-ALIST into a hash compatible with `undo-equiv-table'.
-Argument BUFFER-LIST an `undo-buffer-list' compatible list.
+Argument BUFFER-LIST a `buffer-undo-list' compatible list.
 Argument PENDING-LIST an `pending-undo-list' compatible list."
   (declare (important-return-value t) (side-effect-free error-free))
 
@@ -562,7 +562,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
        (undo-fu-session-make-file-name filename ext)))))
 
 (defun undo-fu-session-make-file-name (filename ext)
-  "Take the path FILENAME, EXT and return a name base on this."
+  "Take the path FILENAME and EXT, returning a name based on them."
   (declare (important-return-value t) (side-effect-free error-free))
   (concat
    (file-name-concat undo-fu-session-directory
