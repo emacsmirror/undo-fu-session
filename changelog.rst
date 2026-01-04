@@ -3,6 +3,10 @@
 Change Log
 ##########
 
+- Unreleased
+
+  - Fix undo session files using wrong extension (``.nil`` instead of writing ``.el`` files).
+
 - Version 0.7 (2024-07-07)
 
   - Support custom file-system locations for undo data via ``undo-fu-session-make-file-name-function``.

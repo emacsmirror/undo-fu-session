@@ -540,11 +540,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (declare (important-return-value t) (side-effect-free error-free))
 
   (cond
-   ((symbolp undo-fu-session-compression)
+   (undo-fu-session-compression
     (concat "." (symbol-name undo-fu-session-compression)))
-   ((eq undo-fu-session-compression t)
-    ;; Used for older versions where compression was a boolean.
-    ".gz")
    (t
     ".el")))
 
