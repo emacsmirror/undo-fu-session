@@ -53,7 +53,7 @@
   (declare (important-return-value nil))
 
   (undo-fu-session-test--with-temp-dir
-   ;; Don't touch the users home directory.
+   ;; Don't touch the user's home directory.
    undo-fu-session-directory
 
    (dotimes (f 100)

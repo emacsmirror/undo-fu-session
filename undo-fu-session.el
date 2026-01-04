@@ -60,9 +60,9 @@
       (gv-letplace (getter setter) place
         (funcall setter `(- ,getter ,(or delta 1)))))))
 
-;; Workaround bug in Emacs 30, where this macro fails when to enable
+;; Workaround bug in Emacs 30, where this macro fails to enable
 ;; auto-compression-mode when a file is loaded from the command line.
-;; The problem seems to be `auto-compression-mode' is true,
+;; The problem seems to be that `auto-compression-mode' is true,
 ;; but the mode has not started when undo-fu-session runs.
 ;; Workaround the bug by replacing the auto-compression-mode
 ;; check with `jka-compr-installed-p'.
@@ -173,7 +173,7 @@ This is done without adjusting trailing slashes or following links."
   ;; or be relative to the default directory.
   ;;
   ;; Notes:
-  ;; - This is loosely based on `f-same?'` from the `f' library.
+  ;; - This is loosely based on `f-same?' from the `f' library.
   ;;   However it's important this only runs on the user directory and NOT trusted directories
   ;;   since there should never be any ambiguity (which could be caused by expansion)
   ;;   regarding which path is trusted.
@@ -234,7 +234,7 @@ ignoring all branches that aren't included in the current undo state."
 ;; Undo Encode/Decode Functionality
 
 (defun undo-fu-session--walk-tree (fn tree)
-  "Operate recursively on undo-list, calling FN TREE."
+  "Operate recursively on undo-list, calling FN on each element of TREE."
   (declare (important-return-value t))
   (cond
    ((consp tree)
@@ -339,7 +339,7 @@ ignoring all branches that aren't included in the current undo state."
 (defun undo-fu-session--next-step (list)
   "Get the next undo step in LIST.
 
-Argument LIST compatible list `buffer-undo-list'."
+Argument LIST a `buffer-undo-list' compatible list."
   (declare (important-return-value t) (side-effect-free error-free))
   (while (car list)
     (setq list (cdr list)))
@@ -348,7 +348,7 @@ Argument LIST compatible list `buffer-undo-list'."
   list)
 
 (defun undo-fu-session--list-to-index-map (list index index-step step-to-index-hash)
-  "Populate the STEP-TO-INDEX-HASH with LIST element.
+  "Populate the STEP-TO-INDEX-HASH with LIST elements.
 
 List elements are used as keys mapping to INDEX by INDEX-STEP."
   (declare (important-return-value nil))
@@ -361,7 +361,7 @@ List elements are used as keys mapping to INDEX by INDEX-STEP."
 (defun undo-fu-session--list-from-index-map (list index index-step step-from-index-hash)
   "Populate the STEP-FROM-INDEX-HASH with INDEX by INDEX-STEP.
 
-INDEX-STEP are used as keys mapping to LIST elements."
+Indices are used as keys mapping to LIST elements."
   (declare (important-return-value nil))
   (unless (eq list t)
     (while list
@@ -400,7 +400,7 @@ Argument PENDING-LIST typically `pending-undo-list'."
 (defun undo-fu-session--equivtable-decode (equiv-table-alist buffer-list pending-list)
   "Convert EQUIV-TABLE-ALIST into a hash compatible with `undo-equiv-table'.
 Argument BUFFER-LIST a `buffer-undo-list' compatible list.
-Argument PENDING-LIST an `pending-undo-list' compatible list."
+Argument PENDING-LIST a `pending-undo-list' compatible list."
   (declare (important-return-value t) (side-effect-free error-free))
 
   (let* ((equiv-table-length (length equiv-table-alist))
@@ -433,7 +433,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (declare (important-return-value nil))
   ;; While errors are highly unlikely in this case,
   ;; clearing old files should _never_ interfere with other operations,
-  ;; so surround with error a check & error message.
+  ;; so surround with an error check & message.
   (condition-case err-1
       (when (file-directory-p undo-fu-session-directory)
         (dolist (file-with-attrs
@@ -504,7 +504,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                   ;; Don't create lock-files for the following reasons:
                   ;; - The file name may be too long and fail to lock (see #10).
                   ;; - Locking is already handled by saving the file from which this undo-data
-                  ;;   is created so locking the undo-data if of limited use.
+                  ;;   is created so locking the undo-data is of limited use.
                   ;; - Small but unnecessary overhead.
                   ;;
                   ;; Having said this, there is a theoretical possibility two emacs instances
@@ -513,7 +513,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
                   ;; so there is practically no benefit in writing a file that is "correct" with
                   ;; respect to locking, when the undo-data doesn't match the file contents.
                   ;; In summary, we would either have to lock both files at once, or locking
-                  ;; when writing undo data close to useless.
+                  ;; when writing undo data is close to useless.
                   (let ((create-lockfiles nil))
                     (write-region nil nil file-dst-full nil 0)))
 
@@ -566,7 +566,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
    ext))
 
 (defun undo-fu-session--match-file-name (filename test-files)
-  "Return t if FILENAME match any item in TEST-FILES."
+  "Return t if FILENAME matches any item in TEST-FILES."
   (declare (important-return-value t))
   ;; NOTE: can't be `side-effect-free' because it calls a user defined callback.
   (let ((case-fold-search (file-name-case-insensitive-p filename))
@@ -584,7 +584,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
     found))
 
 (defun undo-fu-session--match-major-mode (mode test-modes)
-  "Return t if MODE match any item in TEST-MODES."
+  "Return t if MODE matches any item in TEST-MODES."
   (declare (important-return-value t) (side-effect-free error-free))
   (let ((found nil))
     (while mode
@@ -628,7 +628,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
   (declare (important-return-value nil))
   (unless (file-directory-p undo-fu-session-directory)
     (make-directory undo-fu-session-directory t)
-    ;; These files should only readable by the owner, see #2.
+    ;; These files should only be readable by the owner, see #2.
     ;; Setting the executable bit is important for directories to be writable.
     (set-file-modes undo-fu-session-directory #o700)))
 
@@ -771,7 +771,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
           (setq content-header (read (current-buffer)))
 
           ;; Use `undo-fu-session--message-without-echo' to avoid distracting the user
-          ;; when a common-place reason for failing to load is hit.
+          ;; when a commonplace reason for failing to load is hit.
           ;;
           ;; These issues are common when working with others on documents.
           ;; This way users may find out why undo didn't load if they need,
@@ -816,8 +816,8 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
         ;; Assign undo data to the current buffer.
         (setq buffer-undo-list emacs-buffer-undo-list)
         (setq pending-undo-list emacs-pending-undo-list)
-        ;; Merge the hash-table since this is a global-variable, share between
-        ;; buffers otherwise this interferes with other buffers undo-only/redo.
+        ;; Merge the hash-table since this is a global variable shared between
+        ;; buffers; otherwise this interferes with other buffers' undo-only/redo.
         (when (hash-table-p emacs-undo-equiv-table)
           (maphash (lambda (key val) (puthash key val undo-equiv-table)) emacs-undo-equiv-table))
         t))))
