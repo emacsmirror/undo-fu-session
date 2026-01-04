@@ -1,6 +1,6 @@
 ;;; undo-fu-session-test.el --- Undo-fu session test -*- lexical-binding: t -*-
 
-;; SPDX-License-Identifier: GPL-2.0-or-later
+;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Copyright (C) 2020  Campbell Barton
 ;; Copyright (C) 2009-2015  Tomohiro Matsuyama
 
