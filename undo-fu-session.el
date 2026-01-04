@@ -642,7 +642,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
      ((null filename)
       nil)
      ((and undo-fu-session-ignore-encrypted-files
-           epa-file-handler
+           (bound-and-true-p epa-file-handler)
            (string-match-p (car epa-file-handler) filename))
       nil)
      ((and undo-fu-session-ignore-temp-files (undo-fu-session--temp-file-check filename))
