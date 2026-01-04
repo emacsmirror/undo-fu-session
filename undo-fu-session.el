@@ -494,7 +494,7 @@ Argument PENDING-LIST an `pending-undo-list' compatible list."
       (dolist (file-src-full files-to-convert)
         (let ((file-dst-full (file-name-with-extension file-src-full ext-dst)))
           (message "File %d of %d: %s"
-                   count-complete
+                   (1+ count-complete)
                    count-pending
                    (file-name-nondirectory file-dst-full))
           (condition-case-unless-debug err
