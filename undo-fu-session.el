@@ -104,7 +104,7 @@
 
 (defcustom undo-fu-session-make-file-name-function 'undo-fu-session-make-file-name
   "The function that computes the session file-path for the current buffer.
-The function takes two arguments (path, extension).
+The function takes two arguments (filepath, extension).
 The returned path must use the extension argument."
   :type 'function)
 
@@ -557,12 +557,12 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
                 undo-fu-session-make-file-name-function)
        (undo-fu-session-make-file-name filename ext)))))
 
-(defun undo-fu-session-make-file-name (filename ext)
-  "Take the path FILENAME and EXT, returning a name based on them."
+(defun undo-fu-session-make-file-name (filepath ext)
+  "Take the path FILEPATH and EXT, returning a name based on them."
   (declare (important-return-value t) (side-effect-free error-free))
   (concat
    (file-name-concat undo-fu-session-directory
-                     (url-hexify-string (convert-standard-filename (expand-file-name filename))))
+                     (url-hexify-string (convert-standard-filename (expand-file-name filepath))))
    ext))
 
 (defun undo-fu-session--match-file-name (filename test-files)
