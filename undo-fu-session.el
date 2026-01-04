@@ -152,7 +152,7 @@ to convert existing files to the newly selected format."
   "Number of files to store, nil to disable limiting entirely.
 
 Enforcing removes the oldest files."
-  :type '(choice (const :tag "Unlimited" nil) integer))
+  :type '(choice (const :tag "Unlimited" nil) natnum))
 
 
 ;; ---------------------------------------------------------------------------
