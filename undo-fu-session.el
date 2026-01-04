@@ -220,12 +220,12 @@ ignoring all branches that aren't included in the current undo state."
       (setq linear-list (cdr linear-list)))
 
     ;; Pass through 'nil', when there is no undo information.
-    ;; Also convert '(list nil)' to 'nil', since this is no undo info too.
+    ;; Also convert '(nil)' to 'nil', since this is no undo info too.
     ;;
     ;; Note that we use 'nil' as this is what `buffer-undo-list' is set
     ;; to when there are no undo steps yet.
     (cond
-     ((and linear-list (null (equal (list nil) linear-list)))
+     ((and linear-list (null (equal '(nil) linear-list)))
       linear-list)
      (t
       nil))))
