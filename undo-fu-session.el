@@ -100,7 +100,7 @@
 (defcustom undo-fu-session-directory
   (locate-user-emacs-file "undo-fu-session" ".emacs-undo-fu-session")
   "The directory to store undo data."
-  :type 'string)
+  :type 'directory)
 
 (defcustom undo-fu-session-make-file-name-function 'undo-fu-session-make-file-name
   "The function that computes the session file-path for the current buffer.
@@ -125,7 +125,7 @@ The returned path must use the extension argument."
   "Temporary directories (must be absolute).
 
 Used by `undo-fu-session-ignore-temp-files' for directories to consider temporary."
-  :type '(repeat string))
+  :type '(repeat directory))
 
 (defcustom undo-fu-session-compression 'gz
   "The type of compression to use or nil.
