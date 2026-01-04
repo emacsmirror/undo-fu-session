@@ -66,22 +66,24 @@
        (when (file-exists-p filename-session)
          (delete-file filename-session))
        (with-current-buffer (find-file-literally filename)
-         (dotimes (_i 1000)
-           (ignore-errors
-             (pcase (random 3)
-               (`0
-                (dotimes (_j 10)
-                  (insert (make-string (1+ (random 20)) (+ (random 26) 65)))))
-               (`1 (newline))
-               (`2 (insert "\t"))
-               (`3 (forward-line))
-               (`4 (forward-line -1))
-               (`5 (kill-line))
-               (`6 (kill-paragraph -1))
-               (`7 (yank))
-               (`8
-                (kill-region
-                 (+ (point-min) (random (point-max))) (+ (point-min) (random (point-max))))))))
+         (let ((inhibit-message t))
+           (dotimes (_i 1000)
+             (ignore-errors
+               (pcase (random 9)
+                 (`0
+                  (dotimes (_j 10)
+                    (insert (make-string (1+ (random 20)) (+ (random 26) 65)))))
+                 (`1 (newline))
+                 (`2 (insert "\t"))
+                 (`3 (forward-line))
+                 (`4 (forward-line -1))
+                 (`5 (kill-line))
+                 (`6 (kill-paragraph -1))
+                 (`7 (yank))
+                 (`8
+                  (kill-region
+                   (+ (point-min) (random (point-max)))
+                   (+ (point-min) (random (point-max)))))))))
          (save-buffer)
          (undo-fu-session-save)
          (kill-buffer (current-buffer)))
