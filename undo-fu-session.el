@@ -865,7 +865,7 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
 
 (defun undo-fu-session--mode-in-any-buffer ()
   "Return non-nil if the `undo-fu-session-mode' is enabled in any buffer."
-  (declare (side-effect-free error-free))
+  (declare (important-return-value t) (side-effect-free error-free))
   (let ((mode-in-any-buffer nil)
         (buffers (buffer-list)))
     (while buffers
