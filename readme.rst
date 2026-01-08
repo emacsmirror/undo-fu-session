@@ -123,12 +123,12 @@ of defining the file-system location of undo-fu-session data.
 
 ``undo-fu-session-make-file-name-function``: ``'undo-fu-session-make-file-name``
    This function takes two arguments ``(filepath extension)`` and must return
-   a the path where undo data is stored, ending with ``extension``.
+   the path where undo data is stored, ending with ``extension``.
 
-If you wish to store undo data next in the same directory as the file being edited
+If you wish to store undo data in the same directory as the file being edited
 this example shows how it can be achieved.
 
-Take care, if you define paths outside of ``undo-fu-session-directory`` the following functionality
+Note: if you define paths outside of ``undo-fu-session-directory``, the following functionality won't be available:
 
 - ``undo-fu-session-file-limit`` isn't applied.
 - ``undo-fu-session-compression-update`` won't update compression on existing undo data.
@@ -164,15 +164,14 @@ The package is available in melpa as ``undo-fu-session``, here is an example wit
 
    (use-package undo-fu-session
      :config
-     (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
-
-   (undo-fu-session-global-mode)
+     (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+     (undo-fu-session-global-mode))
 
 
 Undo Tree
 ---------
 
-``undo-tree`` defines it's own undo data-structures and is not compatible with ``undo-fu-session``.
+``undo-tree`` defines its own undo data-structures and is not compatible with ``undo-fu-session``.
 
 These packages cannot be used together.
 

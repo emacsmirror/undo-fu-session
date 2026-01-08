@@ -339,7 +339,7 @@ ignoring all branches that aren't included in the current undo state."
 (defun undo-fu-session--next-step (list)
   "Get the next undo step in LIST.
 
-Argument LIST a `buffer-undo-list' compatible list."
+Argument LIST is a `buffer-undo-list' compatible list."
   (declare (important-return-value t) (side-effect-free error-free))
   (while (car list)
     (setq list (cdr list)))
@@ -371,8 +371,8 @@ Indices are used as keys mapping to LIST elements."
 
 (defun undo-fu-session--equivtable-encode (equiv-table buffer-list pending-list)
   "Convert the EQUIV-TABLE into an alist of buffer list indices.
-Argument BUFFER-LIST typically `buffer-undo-list'.
-Argument PENDING-LIST typically `pending-undo-list'."
+Argument BUFFER-LIST is typically `buffer-undo-list'.
+Argument PENDING-LIST is typically `pending-undo-list'."
   (declare (important-return-value t) (side-effect-free error-free))
 
   ;; Map undo-elem -> index.
@@ -900,7 +900,7 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
          (not (bound-and-true-p undo-fu-session-mode))
          ;; Not in the mini-buffer.
          (null (minibufferp))
-         ;; Not a special mode (package list, tabulated data ... etc)
+         ;; Not a special mode (package list, tabulated data, etc.)
          ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
          (null (derived-mode-p 'special-mode)))
     (undo-fu-session-mode 1)))
