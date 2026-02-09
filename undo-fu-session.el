@@ -721,9 +721,14 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
 
       (undo-fu-session--with-auto-compression-mode
         (with-temp-buffer
-          (prin1 content-header (current-buffer))
-          (write-char ?\n (current-buffer))
-          (prin1 content-data (current-buffer))
+          ;; Prevent user/package settings from truncating the output,
+          ;; otherwise `prin1' silently writes data that `read' cannot parse.
+          (let ((print-length nil)
+                (print-level nil)
+                (print-circle nil))
+            (prin1 content-header (current-buffer))
+            (write-char ?\n (current-buffer))
+            (prin1 content-data (current-buffer)))
           (let ((create-lockfiles nil))
             (write-region nil nil undo-file nil 0))
           t)))))
