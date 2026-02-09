@@ -3,7 +3,7 @@
 Change Log
 ##########
 
-- Unreleased
+- Version 0.8 (2026-02-09)
 
   - Fix undo session files using wrong extension (``.nil`` instead of writing ``.el`` files).
   - Fix ``print-length`` & ``print-level`` settings corrupting saved undo data.
