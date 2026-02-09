@@ -1,14 +1,14 @@
 ;;; undo-fu-session.el --- Persistent undo, available between sessions -*- lexical-binding: t -*-
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
-;; Copyright (C) 2020-2024  Campbell Barton
+;; Copyright (C) 2020-2026  Campbell Barton
 ;; Copyright (C) 2009-2015  Tomohiro Matsuyama
 
 ;; Author: Campbell Barton <ideasman42@gmail.com>
 
 ;; URL: https://codeberg.org/ideasman42/emacs-undo-fu-session
 ;; Keywords: convenience
-;; Version: 0.7
+;; Version: 0.8
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
