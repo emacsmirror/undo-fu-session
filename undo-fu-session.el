@@ -545,17 +545,17 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
    (t
     ".el")))
 
-(defun undo-fu-session--make-file-name (filename)
-  "Take the path FILENAME and return a name based on this."
+(defun undo-fu-session--make-file-name (filepath)
+  "Take the path FILEPATH and return a name based on this."
   (declare (important-return-value t))
   (let ((ext (undo-fu-session--file-name-ext)))
     (condition-case err
-        (funcall undo-fu-session-make-file-name-function filename ext)
+        (funcall undo-fu-session-make-file-name-function filepath ext)
       (error
        (message "Undo-Fu-Session: error (%s) running callback %S, using the default callback"
                 (error-message-string err)
                 undo-fu-session-make-file-name-function)
-       (undo-fu-session-make-file-name filename ext)))))
+       (undo-fu-session-make-file-name filepath ext)))))
 
 (defun undo-fu-session-make-file-name (filepath ext)
   "Take the path FILEPATH and EXT, returning a name based on them."
@@ -565,19 +565,19 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
                      (url-hexify-string (convert-standard-filename (expand-file-name filepath))))
    ext))
 
-(defun undo-fu-session--match-file-name (filename test-files)
-  "Return t if FILENAME matches any item in TEST-FILES."
+(defun undo-fu-session--match-file-name (filepath test-files)
+  "Return t if FILEPATH matches any item in TEST-FILES."
   (declare (important-return-value t))
   ;; NOTE: can't be `side-effect-free' because it calls a user defined callback.
-  (let ((case-fold-search (file-name-case-insensitive-p filename))
+  (let ((case-fold-search (file-name-case-insensitive-p filepath))
         (found nil))
     (while test-files
       (let ((matcher (pop test-files)))
         (when (cond
                ((stringp matcher)
-                (string-match-p matcher filename))
+                (string-match-p matcher filepath))
                (t
-                (funcall matcher filename)))
+                (funcall matcher filepath)))
           ;; Break.
           (setq test-files nil)
           (setq found t))))
@@ -598,8 +598,8 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
               (get mode 'derived-mode-parent)))))
     found))
 
-(defun undo-fu-session--temp-file-check (filename)
-  "Return t if FILENAME is in a temporary directory."
+(defun undo-fu-session--temp-file-check (filepath)
+  "Return t if FILEPATH is in a temporary directory."
   (declare (important-return-value t) (side-effect-free error-free))
 
   ;; Even if this directory doesn't exist, the check is relatively harmless.
@@ -615,10 +615,10 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
 
     (when temp-dirs
       ;; Canonicalized in case the default directory happens to be TEMP.
-      (let ((filename-canonical (undo-fu-session--canonicalize-path filename)))
+      (let ((filepath-canonical (undo-fu-session--canonicalize-path filepath)))
         (while temp-dirs
           (let ((dir (pop temp-dirs)))
-            (when (string-prefix-p dir filename-canonical (file-name-case-insensitive-p dir))
+            (when (string-prefix-p dir filepath-canonical (file-name-case-insensitive-p dir))
               (setq is-temp t)
               (setq temp-dirs nil))))))
     is-temp))
@@ -635,19 +635,19 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
 (defun undo-fu-session--recover-buffer-p (buffer)
   "Return t if undo data of BUFFER should be recovered."
   (declare (important-return-value t))
-  (let ((filename (buffer-file-name buffer))
+  (let ((filepath (buffer-file-name buffer))
         (test-files undo-fu-session-incompatible-files)
         (test-modes undo-fu-session-incompatible-major-modes))
     (cond
-     ((null filename)
+     ((null filepath)
       nil)
      ((and undo-fu-session-ignore-encrypted-files
            (bound-and-true-p epa-file-handler)
-           (string-match-p (car epa-file-handler) filename))
+           (string-match-p (car epa-file-handler) filepath))
       nil)
-     ((and undo-fu-session-ignore-temp-files (undo-fu-session--temp-file-check filename))
+     ((and undo-fu-session-ignore-temp-files (undo-fu-session--temp-file-check filepath))
       nil)
-     ((and test-files (undo-fu-session--match-file-name filename test-files))
+     ((and test-files (undo-fu-session--match-file-name filepath test-files))
       nil)
      ((and test-modes
            (undo-fu-session--match-major-mode (buffer-local-value 'major-mode buffer) test-modes))
@@ -663,7 +663,7 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
   (undo-fu-session--directory-ensure)
 
   (let ((buffer (current-buffer))
-        (filename (buffer-file-name))
+        (filepath (buffer-file-name))
         (undo-file nil)
         (content-header nil)
         (content-data nil)
@@ -711,7 +711,7 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
                (cons 'emacs-undo-equiv-table emacs-undo-equiv-table)))))
 
     (when content-data
-      (setq undo-file (undo-fu-session--make-file-name filename))
+      (setq undo-file (undo-fu-session--make-file-name filepath))
 
       ;; Only enforce the file limit when saving new files,
       ;; this avoids scanning the undo session directory on every successive save.
@@ -743,7 +743,7 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
   "Internal restore logic, resulting in t on success."
   (declare (important-return-value nil))
   (let ((buffer (current-buffer))
-        (filename (buffer-file-name))
+        (filepath (buffer-file-name))
         (undo-file nil)
         (content-header nil)
         (content-data nil)
@@ -759,7 +759,7 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
       (unless (undo-fu-session--recover-buffer-p buffer)
         (throw 'exit nil))
 
-      (setq undo-file (undo-fu-session--make-file-name filename))
+      (setq undo-file (undo-fu-session--make-file-name filepath))
 
       (unless (file-exists-p undo-file)
         (throw 'exit nil))
@@ -779,13 +779,13 @@ Argument PENDING-LIST a `pending-undo-list' compatible list."
           (unless (= (buffer-size buffer) (cdr (assoc 'buffer-size content-header)))
             (undo-fu-session--message-without-echo
              "Undo-Fu-Session discarding: file length mismatch for %S"
-             filename)
+             filepath)
             (throw 'exit nil))
 
           (unless (string-equal (sha1 buffer) (cdr (assoc 'buffer-checksum content-header)))
             (undo-fu-session--message-without-echo
              "Undo-Fu-Session discarding: file checksum mismatch for %S"
-             filename)
+             filepath)
             (throw 'exit nil))
 
           ;; No errors... decode all undo data.
